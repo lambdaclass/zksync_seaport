@@ -1,4 +1,4 @@
-.PHONY: setup update run test docs
+.PHONY: setup update run
 
 setup:
 	git submodule update --init
