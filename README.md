@@ -5,7 +5,7 @@ Seaport implementation on zkSync Era. Seaport is a marketplace protocol for safe
 
 ### Setup
 
-Inits and updates the submodule.
+Clone the `era-test-node` repo.
 
 ```
 make setup
@@ -14,7 +14,7 @@ make setup
 
 ### Update
 
-Updates the submodule.
+Updates `era-test-node`.
 
 ```
 make update
@@ -22,7 +22,7 @@ make update
 
 ### Run
 
-Runs the `era-test-node`.
+Runs `era-test-node`.
 
 ```
 make run
