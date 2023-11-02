@@ -1,3 +1,0 @@
-[submodule "era-test-node"]
-	path = era-test-node
-	url = git@github.com:matter-labs/era-test-node.git
