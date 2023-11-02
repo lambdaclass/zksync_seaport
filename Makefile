@@ -1,10 +1,10 @@
 .PHONY: setup update run
 
 setup:
-	git submodule update --init
+	git clone --depth 1 git@github.com:matter-labs/era-test-node.git
 
 update:
-	git submodule update
+	cd era-test-node && git pull
 
-run: update
-	cd submodules/era-test-node && cargo +nightly run -- --show-calls=all --resolve-hashes run
+run:
+	cd era-test-node && cargo +nightly run -- --show-calls=all --resolve-hashes run
