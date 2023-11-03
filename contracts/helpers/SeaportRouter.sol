@@ -9,7 +9,7 @@ import {
     SeaportInterface
 } from "seaport-types/src/interfaces/SeaportInterface.sol";
 
-import { ReentrancyGuard } from "seaport-core/src/lib/ReentrancyGuard.sol";
+import { ReentrancyGuard } from "seaport-core/contracts/ReentrancyGuard.sol";
 
 import {
     AdvancedOrder,

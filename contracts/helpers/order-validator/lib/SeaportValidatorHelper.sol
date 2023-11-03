@@ -22,7 +22,7 @@ import {
     ContractOffererInterface
 } from "seaport-types/src/interfaces/ContractOffererInterface.sol";
 import { ZoneInterface } from "seaport-types/src/interfaces/ZoneInterface.sol";
-import { GettersAndDerivers } from "seaport-core/src/lib/GettersAndDerivers.sol";
+import { GettersAndDerivers } from "seaport-core/contracts/GettersAndDerivers.sol";
 import {
     SeaportValidatorInterface
 } from "../lib/SeaportValidatorInterface.sol";
@@ -60,7 +60,7 @@ import {
     GenericIssue,
     ConsiderationItemConfiguration
 } from "./SeaportValidatorTypes.sol";
-import { Verifiers } from "seaport-core/src/lib/Verifiers.sol";
+import { Verifiers } from "seaport-core/contracts/Verifiers.sol";
 
 /**
  * @title SeaportValidator

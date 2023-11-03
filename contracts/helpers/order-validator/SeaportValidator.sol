@@ -24,7 +24,7 @@ import {
 import { ZoneInterface } from "seaport-types/src/interfaces/ZoneInterface.sol";
 import {
     GettersAndDerivers
-} from "seaport-core/src/lib/GettersAndDerivers.sol";
+} from "seaport-core/contracts/GettersAndDerivers.sol";
 import { SeaportValidatorInterface } from "./lib/SeaportValidatorInterface.sol";
 import { ZoneInterface } from "seaport-types/src/interfaces/ZoneInterface.sol";
 import {
@@ -59,7 +59,7 @@ import {
     GenericIssue,
     ConsiderationItemConfiguration
 } from "./lib/SeaportValidatorTypes.sol";
-import { Verifiers } from "seaport-core/src/lib/Verifiers.sol";
+import { Verifiers } from "seaport-core/contracts/Verifiers.sol";
 import { ReadOnlyOrderValidator } from "./lib/ReadOnlyOrderValidator.sol";
 import { SeaportValidatorHelper } from "./lib/SeaportValidatorHelper.sol";
 

@@ -50,7 +50,7 @@ task("print-report", "Print the last gas report").setAction(
 
 const optimizerSettingsNoSpecializer = {
   enabled: true,
-  runs: 4_294_967_295,
+  runs: 9_000_000_000,
   details: {
     peephole: true,
     inliner: true,
@@ -139,8 +139,26 @@ const config: HardhatUserConfig = {
   zksolc: {
     version: "latest",
     settings: {
-      // find all available options in the official documentation
-      // https://era.zksync.io/docs/tools/hardhat/hardhat-zksync-solc.html#configuration
+      libraries: {
+        "seaport-core/contracts/Consideration.sol": {
+          Consideration: "0x0",
+        },
+        "seaport-core/contracts/ReentrancyGuard.sol": {
+          ReentrancyGuard: "0x0",
+        },
+        "seaport-core/contracts/GettersAndDerivers.sol": {
+          GettersAndDerivers: "0x0",
+        },
+        "seaport-core/contracts/Verifiers.sol": {
+          Verifiers: "0x0",
+        },
+        "seaport-core/contracts/SignatureVerification.sol": {
+          SignatureVerification: "0x0",
+        },
+        "seaport-sol/contracts/lib/fulfillment/AmountDeriverHelper.sol": {
+          AmountDeriverHelper: "0x0",
+        },
+      },
     },
   },
   networks: {
@@ -169,7 +187,9 @@ const config: HardhatUserConfig = {
     apiKey: process.env.EXPLORER_API_KEY,
   },
   // specify separate cache for hardhat, since it could possibly conflict with foundry's
-  paths: { cache: "hh-cache" },
+  paths: { 
+    cache: "hh-cache" 
+  },
 };
 
 export default config;
