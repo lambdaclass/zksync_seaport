@@ -18,7 +18,7 @@ import {
 
 import {BasicOrderType, ItemType} from "seaport-types/src/lib/ConsiderationEnums.sol";
 
-import {UnavailableReason} from "../SpaceEnums.sol";
+import {SpaceEnums} from "../SpaceEnums.sol";
 
 import {OrderParametersLib} from "./OrderParametersLib.sol";
 
@@ -26,7 +26,7 @@ import {StructCopier} from "./StructCopier.sol";
 
 import {SeaportInterface} from "../SeaportInterface.sol";
 
-import {OrderDetails} from "../fulfillments/lib/Structs.sol";
+import {Structs} from "../fulfillments/lib/Structs.sol";
 
 struct ContractNonceDetails {
     bool set;
@@ -637,9 +637,9 @@ library AdvancedOrderLib {
         AdvancedOrder[] memory advancedOrders,
         CriteriaResolver[] memory criteriaResolvers,
         bytes32[] memory orderHashes,
-        UnavailableReason[] memory unavailableReasons
-    ) internal view returns (OrderDetails[] memory) {
-        OrderDetails[] memory orderDetails = new OrderDetails[](
+        SpaceEnums.UnavailableReason[] memory unavailableReasons
+    ) internal view returns (Structs.OrderDetails[] memory) {
+        Structs.OrderDetails[] memory orderDetails = new Structs.OrderDetails[](
             advancedOrders.length
         );
 
@@ -656,12 +656,12 @@ library AdvancedOrderLib {
         uint256 orderIndex,
         CriteriaResolver[] memory resolvers,
         bytes32 orderHash,
-        UnavailableReason unavailableReason
-    ) internal view returns (OrderDetails memory) {
+        SpaceEnums.UnavailableReason unavailableReason
+    ) internal view returns (Structs.OrderDetails memory) {
         (SpentItem[] memory offer, ReceivedItem[] memory consideration) =
             order.parameters.getSpentAndReceivedItems(order.numerator, order.denominator, orderIndex, resolvers);
 
-        return OrderDetails({
+        return Structs.OrderDetails({
             offerer: order.parameters.offerer,
             conduitKey: order.parameters.conduitKey,
             offer: offer,

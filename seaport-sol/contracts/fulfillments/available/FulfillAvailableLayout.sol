@@ -2,12 +2,7 @@
 pragma solidity ^0.8.17;
 
 import {MatchComponent, MatchComponentType} from "../../lib/types/MatchComponentType.sol";
-import {
-    FulfillAvailableHelperStorageLayout,
-    FulfillmentHelperCounterLayout,
-    AggregatableConsideration,
-    AggregatableOffer
-} from "../lib/Structs.sol";
+import {Structs} from "../lib/Structs.sol";
 import {FULFILL_AVAILABLE_COUNTER_KEY, FULFILL_AVAILABLE_STORAGE_BASE_KEY} from "../lib/Constants.sol";
 
 library FulfillAvailableLayout {
@@ -17,8 +12,8 @@ library FulfillAvailableLayout {
      * @param layout storage layout
      */
     function aggregatableConsiderationExists(
-        AggregatableConsideration memory token,
-        FulfillAvailableHelperStorageLayout storage layout
+        Structs.AggregatableConsideration memory token,
+        Structs.FulfillAvailableHelperStorageLayout storage layout
     ) internal view returns (bool) {
         return layout.considerationMap[token.recipient][token.contractAddress][token.tokenId].length > 0;
     }
@@ -26,7 +21,7 @@ library FulfillAvailableLayout {
     /**
      * @notice Check if an entry into the offer component mapping already exists by checking its length
      */
-    function aggregatableOfferExists(AggregatableOffer memory offer, FulfillAvailableHelperStorageLayout storage layout)
+    function aggregatableOfferExists(Structs.AggregatableOffer memory offer, Structs.FulfillAvailableHelperStorageLayout storage layout)
         internal
         view
         returns (bool)
@@ -37,7 +32,7 @@ library FulfillAvailableLayout {
     /**
      * @notice load storage layout for the current fulfillmentCounter
      */
-    function getStorageLayout() internal view returns (FulfillAvailableHelperStorageLayout storage layout) {
+    function getStorageLayout() internal view returns (Structs.FulfillAvailableHelperStorageLayout storage layout) {
         FulfillmentHelperCounterLayout storage counterLayout = getCounterLayout();
         uint256 counter = counterLayout.fulfillmentCounter;
         bytes32 storageLayoutKey = FULFILL_AVAILABLE_STORAGE_BASE_KEY;
@@ -51,7 +46,7 @@ library FulfillAvailableLayout {
     /**
      * @notice load storage layout for the counter itself
      */
-    function getCounterLayout() internal pure returns (FulfillmentHelperCounterLayout storage layout) {
+    function getCounterLayout() internal pure returns (Structs.FulfillmentHelperCounterLayout storage layout) {
         bytes32 counterLayoutKey = FULFILL_AVAILABLE_COUNTER_KEY;
         assembly {
             layout.slot := counterLayoutKey
@@ -92,7 +87,7 @@ library FulfillAvailableLayout {
      * @notice Get the enumeration of AggregatableConsiderations for a given key (offer or consideration), derived from the hash of the key and the current fulfillmentCounter value
      * @param key Original key used to derive the slot of the enumeration
      */
-    function getEnumeration(bytes32 key) internal view returns (AggregatableConsideration[] storage tokens) {
+    function getEnumeration(bytes32 key) internal view returns (Structs.AggregatableConsideration[] storage tokens) {
         bytes32 counterKey = FULFILL_AVAILABLE_COUNTER_KEY;
         assembly {
             mstore(0, key)

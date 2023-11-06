@@ -21,7 +21,7 @@ import {SeaportInterface} from "../SeaportInterface.sol";
 
 import {GettersAndDerivers} from "seaport-core/src/lib/GettersAndDerivers.sol";
 
-import {UnavailableReason} from "../SpaceEnums.sol";
+import {SpaceEnums} from "../SpaceEnums.sol";
 
 import {AdvancedOrderLib} from "./AdvancedOrderLib.sol";
 
@@ -37,7 +37,7 @@ import {StructCopier} from "./StructCopier.sol";
 
 import {AmountDeriverHelper} from "./fulfillment/AmountDeriverHelper.sol";
 
-import {OrderDetails} from "../fulfillments/lib/Structs.sol";
+import {Structs} from "../fulfillments/lib/Structs.sol";
 
 interface FailingContractOfferer {
     function failureReasons(bytes32) external view returns (uint256);
@@ -64,7 +64,7 @@ library ZoneParametersLib {
         AdvancedOrder[] advancedOrders;
         address fulfiller;
         uint256 maximumFulfilled;
-        OrderDetails[] orderDetails;
+        Structs.OrderDetails[] orderDetails;
         bytes32[] orderHashes;
     }
 
@@ -111,7 +111,7 @@ library ZoneParametersLib {
         uint256 maximumFulfilled,
         address seaport,
         CriteriaResolver[] memory criteriaResolvers,
-        UnavailableReason[] memory unavailableReasons
+        SpaceEnums.UnavailableReason[] memory unavailableReasons
     ) internal view returns (ZoneParameters[] memory) {
         return _getZoneParametersFromStruct(
             _getZoneParametersStruct(advancedOrders, fulfiller, maximumFulfilled, seaport, criteriaResolvers),
@@ -131,7 +131,7 @@ library ZoneParametersLib {
 
     function _getZoneParametersFromStruct(
         ZoneParametersStruct memory zoneParametersStruct,
-        UnavailableReason[] memory unavailableReasons
+        SpaceEnums.UnavailableReason[] memory unavailableReasons
     ) internal view returns (ZoneParameters[] memory) {
         // TODO: use testHelpers pattern to use single amount deriver helper
         ZoneDetails memory details = _getZoneDetails(zoneParametersStruct);
@@ -154,7 +154,7 @@ library ZoneParametersLib {
             advancedOrders: zoneParametersStruct.advancedOrders,
             fulfiller: zoneParametersStruct.fulfiller,
             maximumFulfilled: zoneParametersStruct.maximumFulfilled,
-            orderDetails: new OrderDetails[](
+            orderDetails: new Structs.OrderDetails[](
                             zoneParametersStruct.advancedOrders.length
                         ),
             orderHashes: new bytes32[](
@@ -166,7 +166,7 @@ library ZoneParametersLib {
     function _applyOrderDetails(
         ZoneDetails memory details,
         ZoneParametersStruct memory zoneParametersStruct,
-        UnavailableReason[] memory unavailableReasons
+        SpaceEnums.UnavailableReason[] memory unavailableReasons
     ) internal view {
         bytes32[] memory orderHashes = details.advancedOrders.getOrderHashes(zoneParametersStruct.seaport);
 
@@ -250,7 +250,7 @@ library ZoneParametersLib {
 
     function _createZoneParameters(
         bytes32 orderHash,
-        OrderDetails memory orderDetails,
+        Structs.OrderDetails memory orderDetails,
         AdvancedOrder memory advancedOrder,
         address fulfiller,
         bytes32[] memory orderHashes
