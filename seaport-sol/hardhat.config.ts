@@ -44,6 +44,9 @@ const config: HardhatUserConfig = {
   solidity: {
     version: "0.8.17",
   },
+  paths: {
+    sources: "./src",
+  }
 };
 
 export default config;
