@@ -44,3 +44,6 @@ metrics.txt
 *-metrics.txt
 
 fuzz_debug.json
+
+# Ignore cloned modules
+lib
