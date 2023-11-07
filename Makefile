@@ -12,6 +12,10 @@ setup: setup-era-test-node setup-seaport
 update:
 	cd era-test-node && git pull
 
+.PHONY: compile.seaport-sol
+compile.seaport-sol:
+	cd seaport-sol && yarn hardhat compile
+
 compile-contracts:
 	yarn hardhat compile --network inMemoryNode
 
