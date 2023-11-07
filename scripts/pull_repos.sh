@@ -23,5 +23,5 @@ for url in "${repo_urls[@]}"; do
   repo_name=$(basename "$url" | sed 's/\.git$//')
   
   # Clone the repository
-  git clone "$url" "$clone_dir/$repo_name"
+  [ -d "$clone_dir/$repo_name" ] || git clone "$url" "$clone_dir/$repo_name"
 done

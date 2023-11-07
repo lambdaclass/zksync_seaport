@@ -5,7 +5,7 @@ setup-seaport: clone-repos
 	yarn build
 
 setup-era-test-node:
-	git clone --depth 1 git@github.com:matter-labs/era-test-node.git
+	[ -d "./era-test-node" ] || git clone --depth 1 git@github.com:matter-labs/era-test-node.git
 
 clone-repos:
 	$(shell ./scripts/pull_repos.sh)
