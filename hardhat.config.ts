@@ -140,26 +140,26 @@ const config: HardhatUserConfig = {
     version: "latest",
     settings: {
       libraries: {
-        "seaport-core/contracts/Consideration.sol": {
-          Consideration: "0x0",
+        "lib/seaport-core/src/lib/Consideration.sol": {
+          Consideration: "0xdf5445d8518Ab352f721dAf6D945E20795e6A8A8",
         },
-        "seaport-core/contracts/ReentrancyGuard.sol": {
-          ReentrancyGuard: "0x0",
+        "lib/seaport-core/src/lib/ReentrancyGuard.sol": {
+          ReentrancyGuard: "0x0c1ee95331D377315117FC810E728Aa811589040",
         },
-        "seaport-core/contracts/GettersAndDerivers.sol": {
-          GettersAndDerivers: "0x0",
+        "lib/seaport-core/contracts/GettersAndDerivers.sol": {
+          GettersAndDerivers: "0xB3b570E884254131ef47eF26A01975918672Dc86",
         },
-        "seaport-core/contracts/Verifiers.sol": {
-          Verifiers: "0x0",
+        "lib/seaport-core/contracts/Verifiers.sol": {
+          Verifiers: "0x491708aC0aC935E75b3bE8281639D5165e03A8A5",
         },
-        "seaport-core/contracts/SignatureVerification.sol": {
-          SignatureVerification: "0x0",
+        "lib/seaport-core/contracts/SignatureVerification.sol": {
+          SignatureVerification: "0xaE7F6b4f2fF21fC5Fc52932A25faea11Bf5F509e",
         },
-        "seaport-sol/contracts/lib/fulfillment/AmountDeriverHelper.sol": {
-          AmountDeriverHelper: "0x0",
+        "lib/seaport-sol/contracts/lib/fulfillment/AmountDeriverHelper.sol": {
+          AmountDeriverHelper: "0x4BF4F1aeB40b71bAf59d519EEA133f0b4EEE07bA",
         },
-        "seaport-sol/contracts/lib/types/MatchComponentType.sol": {
-          MatchComponentType: "0x0",
+        "lib/seaport-sol/contracts/lib/types/MatchComponentType.sol": {
+          MatchComponentType: "0x7ebEd91306D639FB2B3edD08738730bae3125045",
         },
       },
     },
@@ -191,7 +191,7 @@ const config: HardhatUserConfig = {
   },
   // specify separate cache for hardhat, since it could possibly conflict with foundry's
   paths: { 
-    cache: "hh-cache" 
+    cache: "hh-cache",
   },
 };
 

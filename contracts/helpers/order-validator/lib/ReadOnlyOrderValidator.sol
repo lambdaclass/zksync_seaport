@@ -17,7 +17,7 @@ import {
 
 import {
     SignatureVerification
-} from "seaport-core/contracts/SignatureVerification.sol";
+} from "seaport-core/src/lib/SignatureVerification.sol";
 
 import {
     _revertOrderAlreadyFilled,

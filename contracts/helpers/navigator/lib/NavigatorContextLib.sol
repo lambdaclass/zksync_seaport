@@ -3,7 +3,7 @@ pragma solidity ^0.8.17;
 
 import {
     MatchComponent
-} from "seaport-sol/contracts/lib/types/MatchComponentType.sol";
+} from "seaport-sol/src/lib/types/MatchComponentType.sol";
 
 import { OrderDetails } from "seaport-sol/src/fulfillments/lib/Structs.sol";
 

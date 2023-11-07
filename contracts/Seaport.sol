@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "seaport-core/contracts/Consideration.sol";
+import "seaport-core/src/lib/Consideration.sol";
 
 /**
  * @title Seaport
