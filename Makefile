@@ -1,6 +1,6 @@
 .PHONY: setup-seaport setup update compile-contracts deploy-libraries run clone-repos
 
-setup-seaport:
+setup-seaport: clone-repos
 	yarn install && \
 	yarn build
 
