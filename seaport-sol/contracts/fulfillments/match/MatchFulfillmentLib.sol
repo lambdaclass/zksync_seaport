@@ -1,12 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import {
-    AggregatableConsideration,
-    ProcessComponentParams,
-    MatchFulfillmentStorageLayout,
-    AggregatableOfferer
-} from "../lib/Structs.sol";
+import {Structs} from "../lib/Structs.sol";
 import {MatchComponent, MatchComponentType} from "../../lib/types/MatchComponentType.sol";
 import {FulfillmentComponent, Fulfillment} from "../../SeaportStructs.sol";
 import {LibSort} from "solady/src/utils/LibSort.sol";
@@ -22,8 +17,8 @@ library MatchFulfillmentLib {
      * @param layout storage layout
      */
     function aggregatableConsiderationExists(
-        AggregatableConsideration memory token,
-        MatchFulfillmentStorageLayout storage layout
+        Structs.AggregatableConsideration memory token,
+        Structs.MatchFulfillmentStorageLayout storage layout
     ) internal view returns (bool) {
         return layout.considerationMap[token.recipient][token.contractAddress][token.tokenId].length > 0;
     }
@@ -34,8 +29,8 @@ library MatchFulfillmentLib {
     function aggregatableOffererExists(
         address token,
         uint256 tokenId,
-        AggregatableOfferer memory offerer,
-        MatchFulfillmentStorageLayout storage layout
+        Structs.AggregatableOfferer memory offerer,
+        Structs.MatchFulfillmentStorageLayout storage layout
     ) internal view returns (bool) {
         return layout.offerMap[token][tokenId][offerer.offerer][offerer.conduitKey].length > 0;
     }
@@ -43,7 +38,7 @@ library MatchFulfillmentLib {
     function processConsiderationComponent(
         MatchComponent[] storage offerComponents,
         MatchComponent[] storage considerationComponents,
-        ProcessComponentParams memory params
+        Structs.ProcessComponentParams memory params
     ) internal {
         while (params.offerItemIndex < offerComponents.length) {
             MatchComponent memory considerationComponent = considerationComponents[params.considerationItemIndex];
@@ -68,7 +63,7 @@ library MatchFulfillmentLib {
     function processOfferComponent(
         MatchComponent[] storage offerComponents,
         MatchComponent[] storage considerationComponents,
-        ProcessComponentParams memory params
+        Structs.ProcessComponentParams memory params
     ) internal {
         // re-load components each iteration as they may have been modified
         MatchComponent memory offerComponent = offerComponents[params.offerItemIndex];
@@ -137,7 +132,7 @@ library MatchFulfillmentLib {
         FulfillmentComponent[] memory considerationFulfillmentComponents =
             MatchArrays.allocateFulfillmentComponents(considerationComponents.length);
         // iterate over consideration components
-        ProcessComponentParams memory params = ProcessComponentParams({
+        Structs.ProcessComponentParams memory params = Structs.ProcessComponentParams({
             offerFulfillmentComponents: offerFulfillmentComponents,
             considerationFulfillmentComponents: considerationFulfillmentComponents,
             offerItemIndex: 0,

@@ -33,7 +33,7 @@ library FulfillAvailableLayout {
      * @notice load storage layout for the current fulfillmentCounter
      */
     function getStorageLayout() internal view returns (Structs.FulfillAvailableHelperStorageLayout storage layout) {
-        FulfillmentHelperCounterLayout storage counterLayout = getCounterLayout();
+        Structs.FulfillmentHelperCounterLayout storage counterLayout = getCounterLayout();
         uint256 counter = counterLayout.fulfillmentCounter;
         bytes32 storageLayoutKey = FULFILL_AVAILABLE_STORAGE_BASE_KEY;
         assembly {
@@ -57,7 +57,7 @@ library FulfillAvailableLayout {
      * @notice increment the fulfillmentCounter to effectively clear the mappings and enumerations between calls
      */
     function incrementFulfillmentCounter() internal {
-        FulfillmentHelperCounterLayout storage counterLayout = getCounterLayout();
+        Structs.FulfillmentHelperCounterLayout storage counterLayout = getCounterLayout();
         counterLayout.fulfillmentCounter += 1;
     }
 

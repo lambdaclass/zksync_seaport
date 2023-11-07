@@ -18,7 +18,8 @@ import {
 
 import {ItemType, Side} from "../../SeaportEnums.sol";
 
-import {MatchComponent, OrderDetails} from "./Structs.sol";
+import {Structs} from "./Structs.sol";
+import {MatchComponent} from "../../lib/types/MatchComponentType.sol";
 
 enum FulfillmentEligibility {
     NONE,
@@ -108,7 +109,7 @@ struct MatchDetails {
 
 library FulfillmentGeneratorLib {
     using LibPRNG for LibPRNG.PRNG;
-    using ItemReferenceLib for OrderDetails[];
+    using ItemReferenceLib for Structs.OrderDetails[];
     using FulfillmentPrepLib for ItemReferenceLib.ItemReference[];
 
     function getDefaultFulfillmentStrategy() internal pure returns (FulfillmentStrategy memory) {
@@ -120,7 +121,7 @@ library FulfillmentGeneratorLib {
     }
 
     // This uses the "default" set of strategies and applies no randomization.
-    function getFulfillments(OrderDetails[] memory orderDetails, address recipient, address caller)
+    function getFulfillments(Structs.OrderDetails[] memory orderDetails, address recipient, address caller)
         internal
         pure
         returns (
@@ -138,7 +139,7 @@ library FulfillmentGeneratorLib {
     }
 
     function getFulfillments(
-        OrderDetails[] memory orderDetails,
+        Structs.OrderDetails[] memory orderDetails,
         FulfillmentStrategy memory strategy,
         address recipient,
         address caller,
@@ -229,7 +230,7 @@ library FulfillmentGeneratorLib {
 
     // This uses the "default" set of strategies, applies no randomization, and
     // does not give a recipient & will not properly detect filtered executions.
-    function getMatchedFulfillments(OrderDetails[] memory orderDetails)
+    function getMatchedFulfillments(Structs.OrderDetails[] memory orderDetails)
         internal
         pure
         returns (
@@ -243,7 +244,7 @@ library FulfillmentGeneratorLib {
 
     // This does not give a recipient & so will not detect filtered executions.
     function getMatchedFulfillments(
-        OrderDetails[] memory orderDetails,
+        Structs.OrderDetails[] memory orderDetails,
         FulfillmentStrategy memory strategy,
         uint256 seed
     )
@@ -261,7 +262,7 @@ library FulfillmentGeneratorLib {
     }
 
     function getMatchDetails(
-        OrderDetails[] memory orderDetails,
+        Structs.OrderDetails[] memory orderDetails,
         FulfillmentStrategy memory strategy,
         address recipient,
         uint256 seed
@@ -1211,14 +1212,14 @@ library FulfillmentGeneratorLib {
 }
 
 library FulfillmentPrepLib {
-    using ItemReferenceLib for OrderDetails[];
+    using ItemReferenceLib for Structs.OrderDetails[];
     using ItemReferenceGroupLib for ItemReferenceLib.ItemReference[];
     using ItemReferenceGroupLib for ItemReferenceGroupLib.ItemReferenceGroup[];
     using MatchableItemReferenceGroupLib for MatchableItemReferenceGroupLib.MatchableItemReferenceGroup[];
     using FulfillAvailableReferenceGroupLib for FulfillAvailableReferenceGroupLib.FulfillAvailableReferenceGroup;
 
     function getFulfillAvailableDetails(
-        OrderDetails[] memory orderDetails,
+        Structs.OrderDetails[] memory orderDetails,
         address recipient,
         address caller,
         uint256 seed
@@ -1247,7 +1248,7 @@ library FulfillmentPrepLib {
         return itemReferences.bundleByAggregatable().splitBySide(recipient, caller).getFulfillAvailableDetails();
     }
 
-    function getMatchDetails(OrderDetails[] memory orderDetails, address recipient, uint256 seed)
+    function getMatchDetails(Structs.OrderDetails[] memory orderDetails, address recipient, uint256 seed)
         internal
         pure
         returns (MatchDetails memory)
@@ -1625,7 +1626,7 @@ library HashAllocatorLib {
 library HashCountLib {
     using LibPRNG for LibPRNG.PRNG;
     using LibSort for uint256[];
-    using ItemReferenceLib for OrderDetails[];
+    using ItemReferenceLib for Structs.OrderDetails[];
     using ItemReferenceLib for ItemReferenceLib.ItemReference[];
 
     struct HashCount {
@@ -1706,7 +1707,7 @@ library ItemReferenceLib {
         address account;
     }
 
-    function getItemReferences(OrderDetails[] memory orderDetails, uint256 seed)
+    function getItemReferences(Structs.OrderDetails[] memory orderDetails, uint256 seed)
         internal
         pure
         returns (ItemReference[] memory)
@@ -1718,7 +1719,7 @@ library ItemReferenceLib {
         uint256 itemReferenceIndex = 0;
 
         for (uint256 orderIndex = 0; orderIndex < orderDetails.length; ++orderIndex) {
-            OrderDetails memory order = orderDetails[orderIndex];
+            Structs.OrderDetails memory order = orderDetails[orderIndex];
             for (uint256 itemIndex = 0; itemIndex < order.offer.length; ++itemIndex) {
                 itemReferences[itemReferenceIndex++] =
                     getItemReference(order.offer[itemIndex], orderIndex, itemIndex, order.offerer, order.conduitKey);
@@ -1844,7 +1845,7 @@ library ItemReferenceLib {
         });
     }
 
-    function getTotalItems(OrderDetails[] memory orderDetails) internal pure returns (uint256) {
+    function getTotalItems(Structs.OrderDetails[] memory orderDetails) internal pure returns (uint256) {
         uint256 totalItems = 0;
 
         for (uint256 i = 0; i < orderDetails.length; ++i) {
@@ -1854,7 +1855,7 @@ library ItemReferenceLib {
         return totalItems;
     }
 
-    function getTotalItems(OrderDetails memory order) internal pure returns (uint256) {
+    function getTotalItems(Structs.OrderDetails memory order) internal pure returns (uint256) {
         return (order.offer.length + order.consideration.length);
     }
 }

@@ -22,9 +22,9 @@ import {
 
 import {ItemType, Side} from "seaport-types/src/lib/ConsiderationEnums.sol";
 
-import {FulfillmentDetails, OrderDetails} from "../fulfillments/lib/Structs.sol";
+import {Structs} from "../fulfillments/lib/Structs.sol";
 
-import {UnavailableReason} from "../SpaceEnums.sol";
+import {SpaceEnums} from "../SpaceEnums.sol";
 
 /**
  * @dev Helper contract for deriving explicit and executions from orders and
@@ -51,10 +51,10 @@ library ExecutionHelper {
      *                            items)
      */
     function getFulfillAvailableExecutions(
-        FulfillmentDetails memory fulfillmentDetails,
+        Structs.FulfillmentDetails memory fulfillmentDetails,
         FulfillmentComponent[][] memory offerFulfillments,
         FulfillmentComponent[][] memory considerationFulfillments,
-        OrderDetails[] memory orderDetails
+        Structs.OrderDetails[] memory orderDetails
     )
         public
         pure
@@ -65,12 +65,12 @@ library ExecutionHelper {
             uint256 nativeTokensReturned
         )
     {
-        FulfillmentDetails memory details = copy(fulfillmentDetails);
+        Structs.FulfillmentDetails memory details = copy(fulfillmentDetails);
 
         bool[] memory availableOrders = new bool[](orderDetails.length);
 
         for (uint256 i = 0; i < orderDetails.length; ++i) {
-            availableOrders[i] = orderDetails[i].unavailableReason == UnavailableReason.AVAILABLE;
+            availableOrders[i] = orderDetails[i].unavailableReason == SpaceEnums.UnavailableReason.AVAILABLE;
         }
 
         implicitExecutionsPre = processImplicitPreOrderExecutions(details, availableOrders);
@@ -96,7 +96,7 @@ library ExecutionHelper {
      * @return implicitExecutionsPre The implicit executions
      * @return implicitExecutionsPost The implicit executions
      */
-    function getMatchExecutions(FulfillmentDetails memory fulfillmentDetails, Fulfillment[] memory fulfillments)
+    function getMatchExecutions(Structs.FulfillmentDetails memory fulfillmentDetails, Fulfillment[] memory fulfillments)
         internal
         pure
         returns (
@@ -106,7 +106,7 @@ library ExecutionHelper {
             uint256 nativeTokensReturned
         )
     {
-        FulfillmentDetails memory details = copy(fulfillmentDetails);
+        Structs.FulfillmentDetails memory details = copy(fulfillmentDetails);
 
         explicitExecutions = new Execution[](fulfillments.length);
 
@@ -172,7 +172,7 @@ library ExecutionHelper {
         }
     }
 
-    function getStandardExecutions(FulfillmentDetails memory details)
+    function getStandardExecutions(Structs.FulfillmentDetails memory details)
         public
         pure
         returns (Execution[] memory implicitExecutions, uint256 nativeTokensReturned)
@@ -195,7 +195,7 @@ library ExecutionHelper {
      * @dev Return executions for fulfilOrder and fulfillAdvancedOrder.
      */
     function getStandardExecutions(
-        OrderDetails memory orderDetails,
+        Structs.OrderDetails memory orderDetails,
         address fulfiller,
         bytes32 fulfillerConduitKey,
         address recipient,
@@ -314,7 +314,7 @@ library ExecutionHelper {
         }
     }
 
-    function getBasicExecutions(FulfillmentDetails memory details)
+    function getBasicExecutions(Structs.FulfillmentDetails memory details)
         public
         pure
         returns (Execution[] memory implicitExecutions, uint256 nativeTokensReturned)
@@ -337,7 +337,7 @@ library ExecutionHelper {
      *      fulfillBasicOrderEfficient.
      */
     function getBasicExecutions(
-        OrderDetails memory orderDetails,
+        Structs.OrderDetails memory orderDetails,
         address fulfiller,
         bytes32 fulfillerConduitKey,
         uint256 nativeTokensSupplied,
@@ -498,12 +498,12 @@ library ExecutionHelper {
      * @return trueRecipient The actual recipient
      */
     function getItemAndRecipient(
-        FulfillmentDetails memory fulfillmentDetails,
+        Structs.FulfillmentDetails memory fulfillmentDetails,
         address payable offerRecipient,
         FulfillmentComponent memory component,
         Side side
     ) internal pure returns (SpentItem memory item, address payable trueRecipient) {
-        OrderDetails memory details = fulfillmentDetails.orders[component.orderIndex];
+        Structs.OrderDetails memory details = fulfillmentDetails.orders[component.orderIndex];
 
         if (side == Side.OFFER) {
             item = details.offer[component.itemIndex];
@@ -532,7 +532,7 @@ library ExecutionHelper {
      * @return The execution
      */
     function processExecutionFromAggregatedFulfillmentComponents(
-        FulfillmentDetails memory fulfillmentDetails,
+        Structs.FulfillmentDetails memory fulfillmentDetails,
         address payable offerRecipient,
         FulfillmentComponent[] memory aggregatedComponents,
         Side side
@@ -549,7 +549,7 @@ library ExecutionHelper {
         FulfillmentComponent memory first = aggregatedComponents[0];
         (SpentItem memory firstItem, address payable trueRecipient) =
             getItemAndRecipient(fulfillmentDetails, offerRecipient, first, side);
-        OrderDetails memory details = fulfillmentDetails.orders[first.orderIndex];
+        Structs.OrderDetails memory details = fulfillmentDetails.orders[first.orderIndex];
 
         return Execution({
             offerer: side == Side.OFFER ? details.offerer : fulfillmentDetails.fulfiller,
@@ -576,7 +576,7 @@ library ExecutionHelper {
      * @return explicitExecutions The explicit executions
      */
     function processExplicitExecutionsFromAggregatedComponents(
-        FulfillmentDetails memory fulfillmentDetails,
+        Structs.FulfillmentDetails memory fulfillmentDetails,
         FulfillmentComponent[][] memory offerComponents,
         FulfillmentComponent[][] memory considerationComponents,
         bool[] memory availableOrders
@@ -601,7 +601,7 @@ library ExecutionHelper {
                     continue;
                 }
 
-                OrderDetails memory offerOrderDetails = fulfillmentDetails.orders[component.orderIndex];
+                Structs.OrderDetails memory offerOrderDetails = fulfillmentDetails.orders[component.orderIndex];
 
                 if (component.itemIndex < offerOrderDetails.offer.length) {
                     SpentItem memory item = offerOrderDetails.offer[component.itemIndex];
@@ -619,7 +619,7 @@ library ExecutionHelper {
 
             // use the first fulfillment component to get the order details
             FulfillmentComponent memory first = aggregatedComponents[0];
-            OrderDetails memory details = fulfillmentDetails.orders[first.orderIndex];
+            Structs.OrderDetails memory details = fulfillmentDetails.orders[first.orderIndex];
             SpentItem memory firstItem = details.offer[first.itemIndex];
 
             if (fulfillmentDetails.recipient == details.offerer && firstItem.itemType != ItemType.NATIVE) {
@@ -653,7 +653,7 @@ library ExecutionHelper {
                     continue;
                 }
 
-                OrderDetails memory considerationOrderDetails = fulfillmentDetails.orders[component.orderIndex];
+                Structs.OrderDetails memory considerationOrderDetails = fulfillmentDetails.orders[component.orderIndex];
 
                 if (component.itemIndex < considerationOrderDetails.consideration.length) {
                     ReceivedItem memory item = considerationOrderDetails.consideration[component.itemIndex];
@@ -671,7 +671,7 @@ library ExecutionHelper {
 
             // use the first fulfillment component to get the order details
             FulfillmentComponent memory first = aggregatedComponents[0];
-            OrderDetails memory details = fulfillmentDetails.orders[first.orderIndex];
+            Structs.OrderDetails memory details = fulfillmentDetails.orders[first.orderIndex];
             ReceivedItem memory firstItem = details.consideration[first.itemIndex];
 
             if (firstItem.recipient == fulfillmentDetails.fulfiller && firstItem.itemType != ItemType.NATIVE) {
@@ -711,7 +711,7 @@ library ExecutionHelper {
      * @return executions The executions
      */
     function processExecutionsFromIndividualOfferFulfillmentComponents(
-        OrderDetails[] memory orderDetails,
+        Structs.OrderDetails[] memory orderDetails,
         address payable recipient,
         FulfillmentComponent[] memory components
     ) internal pure returns (Execution[] memory executions) {
@@ -719,7 +719,7 @@ library ExecutionHelper {
 
         for (uint256 i = 0; i < components.length; i++) {
             FulfillmentComponent memory component = components[i];
-            OrderDetails memory details = orderDetails[component.orderIndex];
+            Structs.OrderDetails memory details = orderDetails[component.orderIndex];
             SpentItem memory item = details.offer[component.itemIndex];
             executions[i] = Execution({
                 offerer: details.offerer,
@@ -744,7 +744,7 @@ library ExecutionHelper {
      * @return implicitExecutions The implicit executions
      */
     function processImplicitPreOrderExecutions(
-        FulfillmentDetails memory fulfillmentDetails,
+        Structs.FulfillmentDetails memory fulfillmentDetails,
         bool[] memory availableOrders
     ) internal pure returns (Execution[] memory implicitExecutions) {
         // Get the maximum possible number of implicit executions.
@@ -772,7 +772,7 @@ library ExecutionHelper {
         }
 
         for (uint256 o; o < fulfillmentDetails.orders.length; o++) {
-            OrderDetails memory orderDetails = fulfillmentDetails.orders[o];
+            Structs.OrderDetails memory orderDetails = fulfillmentDetails.orders[o];
             if (!availableOrders[o]) {
                 continue;
             }
@@ -813,10 +813,10 @@ library ExecutionHelper {
      * @return implicitExecutions The implicit executions
      */
     function processImplicitPostOrderExecutions(
-        FulfillmentDetails memory fulfillmentDetails,
+        Structs.FulfillmentDetails memory fulfillmentDetails,
         bool[] memory availableOrders
     ) internal pure returns (Execution[] memory implicitExecutions) {
-        OrderDetails[] memory orderDetails = fulfillmentDetails.orders;
+        Structs.OrderDetails[] memory orderDetails = fulfillmentDetails.orders;
 
         // Get the maximum possible number of implicit executions.
         uint256 maxPossible = 1;
@@ -834,7 +834,7 @@ library ExecutionHelper {
                 continue;
             }
 
-            OrderDetails memory details = orderDetails[i];
+            Structs.OrderDetails memory details = orderDetails[i];
             for (uint256 j; j < details.offer.length; ++j) {
                 SpentItem memory item = details.offer[j];
                 if (item.amount != 0) {
@@ -870,7 +870,7 @@ library ExecutionHelper {
      * @return An Execution.
      */
     function processExecutionFromFulfillment(
-        FulfillmentDetails memory fulfillmentDetails,
+        Structs.FulfillmentDetails memory fulfillmentDetails,
         Fulfillment memory fulfillment
     ) internal pure returns (Execution memory) {
         // aggregate & zero-out the amounts of each offer item
@@ -878,7 +878,7 @@ library ExecutionHelper {
         for (uint256 j = 0; j < fulfillment.offerComponents.length; j++) {
             FulfillmentComponent memory component = fulfillment.offerComponents[j];
 
-            OrderDetails memory details = fulfillmentDetails.orders[component.orderIndex];
+            Structs.OrderDetails memory details = fulfillmentDetails.orders[component.orderIndex];
 
             if (component.itemIndex < details.offer.length) {
                 SpentItem memory offerSpentItem = details.offer[component.itemIndex];
@@ -894,7 +894,7 @@ library ExecutionHelper {
         for (uint256 j = 0; j < fulfillment.considerationComponents.length; j++) {
             FulfillmentComponent memory component = fulfillment.considerationComponents[j];
 
-            OrderDetails memory details = fulfillmentDetails.orders[component.orderIndex];
+            Structs.OrderDetails memory details = fulfillmentDetails.orders[component.orderIndex];
 
             if (component.itemIndex < details.consideration.length) {
                 ReceivedItem memory considerationSpentItem = details.consideration[component.itemIndex];
@@ -907,7 +907,7 @@ library ExecutionHelper {
 
         // Get the first item on each side
         FulfillmentComponent memory firstOfferComponent = fulfillment.offerComponents[0];
-        OrderDetails memory sourceOrder = fulfillmentDetails.orders[firstOfferComponent.orderIndex];
+        Structs.OrderDetails memory sourceOrder = fulfillmentDetails.orders[firstOfferComponent.orderIndex];
 
         FulfillmentComponent memory firstConsiderationComponent = fulfillment.considerationComponents[0];
         ReceivedItem memory item = fulfillmentDetails.orders[firstConsiderationComponent.orderIndex].consideration[firstConsiderationComponent
@@ -947,7 +947,7 @@ library ExecutionHelper {
      * @param implicitExecutionsPost implicit executions
      */
     function _handleExcessNativeTokens(
-        FulfillmentDetails memory fulfillmentDetails,
+        Structs.FulfillmentDetails memory fulfillmentDetails,
         Execution[] memory explicitExecutions,
         Execution[] memory implicitExecutionsPre,
         Execution[] memory implicitExecutionsPost
@@ -975,16 +975,16 @@ library ExecutionHelper {
         }
     }
 
-    function copy(OrderDetails[] memory orderDetails)
+    function copy(Structs.OrderDetails[] memory orderDetails)
         internal
         pure
-        returns (OrderDetails[] memory copiedOrderDetails)
+        returns (Structs.OrderDetails[] memory copiedOrderDetails)
     {
-        copiedOrderDetails = new OrderDetails[](orderDetails.length);
+        copiedOrderDetails = new Structs.OrderDetails[](orderDetails.length);
         for (uint256 i = 0; i < orderDetails.length; ++i) {
-            OrderDetails memory order = orderDetails[i];
+            Structs.OrderDetails memory order = orderDetails[i];
 
-            copiedOrderDetails[i] = OrderDetails({
+            copiedOrderDetails[i] = Structs.OrderDetails({
                 offerer: order.offerer,
                 conduitKey: order.conduitKey,
                 offer: order.offer.copy(),
@@ -996,8 +996,8 @@ library ExecutionHelper {
         }
     }
 
-    function copy(FulfillmentDetails memory fulfillmentDetails) internal pure returns (FulfillmentDetails memory) {
-        return FulfillmentDetails({
+    function copy(Structs.FulfillmentDetails memory fulfillmentDetails) internal pure returns (Structs.FulfillmentDetails memory) {
+        return Structs.FulfillmentDetails({
             orders: copy(fulfillmentDetails.orders),
             recipient: fulfillmentDetails.recipient,
             fulfiller: fulfillmentDetails.fulfiller,

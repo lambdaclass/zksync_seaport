@@ -158,6 +158,9 @@ const config: HardhatUserConfig = {
         "seaport-sol/contracts/lib/fulfillment/AmountDeriverHelper.sol": {
           AmountDeriverHelper: "0x0",
         },
+        "seaport-sol/contracts/lib/types/MatchComponentType.sol": {
+          MatchComponentType: "0x0",
+        },
       },
     },
   },

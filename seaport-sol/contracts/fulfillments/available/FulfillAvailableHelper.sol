@@ -3,15 +3,9 @@ pragma solidity ^0.8.17;
 
 import "../../SeaportStructs.sol";
 import "../../lib/SeaportArrays.sol";
-import {
-    FulfillAvailableHelperStorageLayout,
-    FulfillmentHelperCounterLayout,
-    AggregatableOffer,
-    AggregatableConsideration
-} from "../lib/Structs.sol";
+import { Structs} from "../lib/Structs.sol";
 import {FulfillAvailableLayout} from "./FulfillAvailableLayout.sol";
 import {FULFILL_AVAILABLE_COUNTER_KEY, FULFILL_AVAILABLE_STORAGE_BASE_KEY} from "../lib/Constants.sol";
-import {OrderDetails} from "../lib/Structs.sol";
 
 contract FulfillAvailableHelper {
     /**
@@ -115,7 +109,7 @@ contract FulfillAvailableHelper {
      * @return offer
      * @return consideration
      */
-    function getNaiveFulfillmentComponents(OrderDetails[] memory orders)
+    function getNaiveFulfillmentComponents(Structs.OrderDetails[] memory orders)
         public
         pure
         returns (FulfillmentComponent[][] memory offer, FulfillmentComponent[][] memory consideration)
@@ -125,7 +119,7 @@ contract FulfillAvailableHelper {
             uint256 numOffers;
             uint256 numConsiderations;
             for (uint256 i = 0; i < orders.length; i++) {
-                OrderDetails memory order = orders[i];
+                Structs.OrderDetails memory order = orders[i];
 
                 numOffers += order.offer.length;
                 numConsiderations += order.consideration.length;
@@ -140,7 +134,7 @@ contract FulfillAvailableHelper {
         uint256 considerationIndex;
         // iterate over orders again, creating one one-element array per offer and consideration item
         for (uint256 i = 0; i < orders.length; i++) {
-            OrderDetails memory order = orders[i];
+            Structs.OrderDetails memory order = orders[i];
             for (uint256 j; j < order.offer.length; j++) {
                 offer[offerIndex] =
                     SeaportArrays.FulfillmentComponents(FulfillmentComponent({orderIndex: i, itemIndex: j}));
@@ -212,7 +206,7 @@ contract FulfillAvailableHelper {
     {
         // increment counter to get clean mappings and enumeration
         FulfillAvailableLayout.incrementFulfillmentCounter();
-        FulfillAvailableHelperStorageLayout storage layout = FulfillAvailableLayout.getStorageLayout();
+        Structs.FulfillAvailableHelperStorageLayout storage layout = FulfillAvailableLayout.getStorageLayout();
 
         // iterate over each order
         for (uint256 i; i < orders.length; ++i) {
@@ -225,7 +219,7 @@ contract FulfillAvailableHelper {
         offer = new FulfillmentComponent[][](layout.offerEnumeration.length);
         // iterate over enumerated groupings and add to array
         for (uint256 i; i < layout.offerEnumeration.length; ++i) {
-            AggregatableOffer memory token = layout.offerEnumeration[i];
+            Structs.AggregatableOffer memory token = layout.offerEnumeration[i];
 
             offer[i] = layout.offerMap[token.contractAddress][token.tokenId][token.offerer][token.conduitKey];
         }
@@ -234,7 +228,7 @@ contract FulfillAvailableHelper {
             layout.considerationEnumeration.length
         );
         for (uint256 i; i < layout.considerationEnumeration.length; ++i) {
-            AggregatableConsideration memory token = layout.considerationEnumeration[i];
+            Structs.AggregatableConsideration memory token = layout.considerationEnumeration[i];
             consideration[i] = layout.considerationMap[token.recipient][token.contractAddress][token.tokenId];
         }
         return (offer, consideration);
@@ -264,7 +258,7 @@ contract FulfillAvailableHelper {
         address offerer,
         bytes32 conduitKey,
         uint256 orderIndex,
-        FulfillAvailableHelperStorageLayout storage layout
+        Structs.FulfillAvailableHelperStorageLayout storage layout
     ) private {
         // iterate over each offer item
         for (uint256 j; j < offer.length; ++j) {
@@ -274,7 +268,7 @@ contract FulfillAvailableHelper {
             // grab offer item
             OfferItem memory item = offer[j];
             // create enumeration struct
-            AggregatableOffer memory aggregatableOffer = AggregatableOffer({
+            Structs.AggregatableOffer memory aggregatableOffer = Structs.AggregatableOffer({
                 offerer: offerer,
                 conduitKey: conduitKey,
                 contractAddress: item.token,
@@ -299,7 +293,7 @@ contract FulfillAvailableHelper {
     function preProcessConsideration(
         ConsiderationItem[] memory consideration,
         uint256 orderIndex,
-        FulfillAvailableHelperStorageLayout storage layout
+        Structs.FulfillAvailableHelperStorageLayout storage layout
     ) private {
         // iterate over each offer item
         for (uint256 j; j < consideration.length; ++j) {
@@ -308,7 +302,7 @@ contract FulfillAvailableHelper {
             // grab consideration item
             ConsiderationItem memory item = consideration[j];
             // create enumeration struct
-            AggregatableConsideration memory token = AggregatableConsideration({
+            Structs.AggregatableConsideration memory token = Structs.AggregatableConsideration({
                 recipient: item.recipient,
                 contractAddress: item.token,
                 tokenId: item.identifierOrCriteria

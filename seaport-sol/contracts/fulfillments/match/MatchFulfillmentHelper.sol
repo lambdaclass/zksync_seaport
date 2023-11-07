@@ -1,13 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import {
-    AggregatableConsideration,
-    ProcessComponentParams,
-    AggregatableOfferer,
-    OrderDetails,
-    MatchFulfillmentStorageLayout
-} from "../lib/Structs.sol";
+import {Structs} from "../lib/Structs.sol";
 import {MatchComponent, MatchComponentType} from "../../lib/types/MatchComponentType.sol";
 import {
     FulfillmentComponent,
@@ -19,7 +13,7 @@ import {
     ReceivedItem,
     CriteriaResolver
 } from "../../SeaportStructs.sol";
-import {UnavailableReason} from "../../SpaceEnums.sol";
+import {SpaceEnums} from "../../SpaceEnums.sol";
 import {MatchFulfillmentLib} from "./MatchFulfillmentLib.sol";
 import {MatchFulfillmentLayout} from "./MatchFulfillmentLayout.sol";
 
@@ -37,7 +31,7 @@ contract MatchFulfillmentHelper is AmountDeriverHelper {
     function getMatchedFulfillments(
         Order[] memory orders,
         bytes32[] memory orderHashes,
-        UnavailableReason[] memory unavailableReasons
+        SpaceEnums.UnavailableReason[] memory unavailableReasons
     )
         public
         returns (
@@ -46,7 +40,7 @@ contract MatchFulfillmentHelper is AmountDeriverHelper {
             MatchComponent[] memory remainingConsiderationComponents
         )
     {
-        OrderDetails[] memory orderDetails = toOrderDetails(orders, orderHashes, unavailableReasons);
+        Structs.OrderDetails[] memory orderDetails = toOrderDetails(orders, orderHashes, unavailableReasons);
 
         return getMatchedFulfillments(orderDetails);
     }
@@ -63,7 +57,7 @@ contract MatchFulfillmentHelper is AmountDeriverHelper {
         AdvancedOrder[] memory orders,
         CriteriaResolver[] memory resolvers,
         bytes32[] memory orderHashes,
-        UnavailableReason[] memory unavailableReasons
+        SpaceEnums.UnavailableReason[] memory unavailableReasons
     )
         public
         returns (
@@ -72,7 +66,7 @@ contract MatchFulfillmentHelper is AmountDeriverHelper {
             MatchComponent[] memory remainingConsiderationComponents
         )
     {
-        OrderDetails[] memory details = toOrderDetails(orders, resolvers, orderHashes, unavailableReasons);
+        Structs.OrderDetails[] memory details = toOrderDetails(orders, resolvers, orderHashes, unavailableReasons);
         return getMatchedFulfillments(details);
     }
 
@@ -83,7 +77,7 @@ contract MatchFulfillmentHelper is AmountDeriverHelper {
      * @param orders orders
      * @return fulfillments
      */
-    function getMatchedFulfillments(OrderDetails[] memory orders)
+    function getMatchedFulfillments(Structs.OrderDetails[] memory orders)
         public
         returns (
             Fulfillment[] memory fulfillments,
@@ -94,11 +88,11 @@ contract MatchFulfillmentHelper is AmountDeriverHelper {
         // increment counter to get clean mappings and enumeration
         MatchFulfillmentLayout.incrementFulfillmentCounter();
         // load the storage layout
-        MatchFulfillmentStorageLayout storage layout = MatchFulfillmentLayout.getStorageLayout();
+        Structs.MatchFulfillmentStorageLayout storage layout = MatchFulfillmentLayout.getStorageLayout();
 
         // iterate over each order and process the offer and consideration components
         for (uint256 i; i < orders.length; ++i) {
-            OrderDetails memory details = orders[i];
+            Structs.OrderDetails memory details = orders[i];
 
             // insert MatchComponents into the offer mapping, grouped by token, tokenId, offerer, and conduitKey
             // also update per-token+tokenId enumerations of AggregatableOfferer
@@ -113,12 +107,12 @@ contract MatchFulfillmentHelper is AmountDeriverHelper {
         uint256 considerationLength = layout.considerationEnumeration.length;
         for (uint256 i; i < considerationLength; ++i) {
             // get the token information
-            AggregatableConsideration storage token = layout.considerationEnumeration[i];
+            Structs.AggregatableConsideration storage token = layout.considerationEnumeration[i];
             // load the consideration components
             MatchComponent[] storage considerationComponents =
                 layout.considerationMap[token.recipient][token.contractAddress][token.tokenId];
             // load the enumeration of offerer+conduit keys for offer components that match this token
-            AggregatableOfferer[] storage offererEnumeration =
+            Structs.AggregatableOfferer[] storage offererEnumeration =
                 layout.tokenToOffererEnumeration[token.contractAddress][token.tokenId];
             // iterate over each offerer+conduit with offer components that match this token and create matching fulfillments
             // this will update considerationComponents in-place in storage, which we check at the beginning of each loop
@@ -128,7 +122,7 @@ contract MatchFulfillmentHelper is AmountDeriverHelper {
                     break;
                 }
                 // load the AggregatableOfferer
-                AggregatableOfferer storage aggregatableOfferer = offererEnumeration[j];
+                Structs.AggregatableOfferer storage aggregatableOfferer = offererEnumeration[j];
                 // load the associated offer components for this offerer+conduit
                 MatchComponent[] storage offerComponents = layout.offerMap[token.contractAddress][token.tokenId][aggregatableOfferer
                     .offerer][aggregatableOfferer.conduitKey];
@@ -149,7 +143,7 @@ contract MatchFulfillmentHelper is AmountDeriverHelper {
 
         // get any remaining offer components
         for (uint256 i; i < orders.length; ++i) {
-            OrderDetails memory details = orders[i];
+            Structs.OrderDetails memory details = orders[i];
 
             // insert MatchComponents into the offer mapping, grouped by token, tokenId, offerer, and conduitKey
             // also update per-token+tokenId enumerations of AggregatableOfferer
@@ -178,7 +172,7 @@ contract MatchFulfillmentHelper is AmountDeriverHelper {
         address offerer,
         bytes32 conduitKey,
         uint256 orderIndex,
-        MatchFulfillmentStorageLayout storage layout
+        Structs.MatchFulfillmentStorageLayout storage layout
     ) private {
         // iterate over each offer item
         for (uint256 j; j < offer.length; ++j) {
@@ -190,8 +184,8 @@ contract MatchFulfillmentHelper is AmountDeriverHelper {
                 orderIndex: uint8(orderIndex),
                 itemIndex: uint8(j)
             });
-            AggregatableOfferer memory aggregatableOfferer =
-                AggregatableOfferer({offerer: offerer, conduitKey: conduitKey});
+            Structs.AggregatableOfferer memory aggregatableOfferer =
+                Structs.AggregatableOfferer({offerer: offerer, conduitKey: conduitKey});
 
             // if it does not exist in the map, add it to our per-token+id enumeration
             if (
@@ -209,7 +203,7 @@ contract MatchFulfillmentHelper is AmountDeriverHelper {
         SpentItem[] memory offer,
         address offerer,
         bytes32 conduitKey,
-        MatchFulfillmentStorageLayout storage layout
+        Structs.MatchFulfillmentStorageLayout storage layout
     ) private view returns (MatchComponent[] memory remainingOfferComponents) {
         // iterate over each offer item
         for (uint256 j; j < offer.length; ++j) {
@@ -233,7 +227,7 @@ contract MatchFulfillmentHelper is AmountDeriverHelper {
     function preProcessSpentItems(
         ReceivedItem[] memory consideration,
         uint256 orderIndex,
-        MatchFulfillmentStorageLayout storage layout
+        Structs.MatchFulfillmentStorageLayout storage layout
     ) private {
         // iterate over each consideration item
         for (uint256 j; j < consideration.length; ++j) {
@@ -246,7 +240,7 @@ contract MatchFulfillmentHelper is AmountDeriverHelper {
                 itemIndex: uint8(j)
             });
             // create enumeration struct
-            AggregatableConsideration memory token = AggregatableConsideration({
+            Structs.AggregatableConsideration memory token = Structs.AggregatableConsideration({
                 recipient: item.recipient,
                 contractAddress: item.token,
                 tokenId: item.identifier
@@ -260,7 +254,7 @@ contract MatchFulfillmentHelper is AmountDeriverHelper {
         }
     }
 
-    function postProcessReceivedItems(ReceivedItem[] memory consideration, MatchFulfillmentStorageLayout storage layout)
+    function postProcessReceivedItems(ReceivedItem[] memory consideration, Structs.MatchFulfillmentStorageLayout storage layout)
         private
         view
         returns (MatchComponent[] memory remainingConsiderationComponents)
