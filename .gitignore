@@ -1,1 +1,5 @@
 era-test-node/
+artifacts-zk/
+cache-zk/
+.yarn/
+.gas_reports/
