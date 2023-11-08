@@ -1,6 +1,8 @@
 era-test-node/
 .yarn/
 .gas_reports/
+.DS_Store
+
 # Logs
 logs
 *.log
@@ -114,3 +116,4 @@ dist
 
 # TernJS port file
 .tern-port
+
