@@ -20,5 +20,5 @@ jobs:
         run: |
           yarn install
           cd ExecutionHelper
-          yarn hardhat compile
-          yarn hardhat deploy-zksync --script deploy.ts
+          yarn dlx hardhat compile
+          yarn dlx hardhat deploy-zksync --script deploy.ts
