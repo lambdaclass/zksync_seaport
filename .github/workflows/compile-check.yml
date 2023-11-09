@@ -23,7 +23,7 @@ jobs:
         uses: JarvusInnovations/background-action@v1
         with:
           run: |
-            make setup-ci
+            make -n setup-ci
           wait-on: |
               http://localhost:8011
 
