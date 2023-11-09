@@ -13,16 +13,16 @@ jobs:
         with:
           node-version: 18.18
 
+      - name: Run install
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install 
+
       # I think this is not required anymore
       - name: Install needed deps
         uses: borales/actions-yarn@v4
         with:
           cmd: add seaport-sol seaport-core solady 
-
-      - name: Run install
-        uses: borales/actions-yarn@v4
-        with:
-          cmd: install 
 
       - name: Compile and deploy libs
         run: |
