@@ -18,6 +18,7 @@ jobs:
 
       - name: Compile and deploy ExecutionHelper.
         run: |
+          yarn install
           cd ExecutionHelper
           yarn hardhat compile
           yarn hardhat deploy-zksync --script deploy.ts
