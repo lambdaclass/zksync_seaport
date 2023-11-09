@@ -20,7 +20,7 @@ jobs:
           node-version: 18.18
 
       - name: Initial setup and start node
-      - uses: JarvusInnovations/background-action@v1
+        uses: JarvusInnovations/background-action@v1
         with:
           run: |
             git clone https://github.com/matter-labs/era-test-node.git
