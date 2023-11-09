@@ -25,7 +25,6 @@ jobs:
           cmd: install 
 
       - name: Compile and deploy libs
-        uses: borales/actions-yarn@v4
         run: |
           cd ExecutionHelper
           yarn hardhat compile
