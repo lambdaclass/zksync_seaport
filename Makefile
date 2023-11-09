@@ -1,4 +1,15 @@
 # ------------------------------------------------------------------------------
+# CI targets:
+# ------------------------------------------------------------------------------
+
+start-node-from-release-binary:
+	curl -LO https://github.com/matter-labs/era-test-node/releases/download/v0.1.0-alpha.10/era_test_node-v0.1.0-alpha.10-x86_64-unknown-linux-gnu.tar.gz
+	tar -zxvf era_test_node-v0.1.0-alpha.10-x86_64-unknown-linux-gnu.tar.gz
+	./era_test_node run
+
+setup-ci: fetch-era-test-node-binary setup-execution-helper setup-seaport
+
+# ------------------------------------------------------------------------------
 # Development environment setup:
 # ------------------------------------------------------------------------------
 
@@ -8,7 +19,7 @@ setup: era-test-node setup-execution-helper setup-seaport
 era-test-node: 
 	git clone --depth 1 git@github.com:matter-labs/era-test-node.git
 
-.PHONY: setup-execution-helper
+.PHONY: setup-execution-helper 
 setup-execution-helper: 
 	cd ExecutionHelper && yarn install 
 

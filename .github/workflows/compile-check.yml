@@ -23,13 +23,11 @@ jobs:
         uses: JarvusInnovations/background-action@v1
         with:
           run: |
-            git clone https://github.com/matter-labs/era-test-node.git
-            make setup 
-            make run-era-test-node &
+            make setup-ci
           wait-on: |
               http://localhost:8011
 
-          wait-for: 15m
+          wait-for: 5m
 
       - name: Compile and deploy ExecutionHelper.
         run:  make compile-and-deploy-execution-helper 
