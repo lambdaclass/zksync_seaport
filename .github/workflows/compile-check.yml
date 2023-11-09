@@ -20,5 +20,7 @@ jobs:
         run: |
           yarn install
           cd ExecutionHelper
+          echo $(pwd)
+          yarn install
           yarn run hardhat compile
           yarn run hardhat deploy-zksync --script deploy.ts
