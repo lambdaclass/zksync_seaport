@@ -8,11 +8,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Rustup toolchain install
+      - name: Rust nightly install
         uses: dtolnay/rust-toolchain@nightly
-        with:
-          toolchain: nightly
-          targets: nightly-x86_64-unknown-linux-gnu
 
       - name: Set up Node.js 18.18
         uses: actions/setup-node@v3
