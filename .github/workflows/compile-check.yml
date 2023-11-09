@@ -26,7 +26,7 @@ jobs:
             git clone https://github.com/matter-labs/era-test-node.git
             make setup 
             make run-era-test-node &
-        wait-on:
+        wait-on: |
             http://localhost:8011
 
       - name: Compile and deploy ExecutionHelper.
