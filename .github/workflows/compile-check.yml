@@ -14,7 +14,9 @@ jobs:
           node-version: 18.18
 
       - name: Initial setup and start node
-        run: make setup-ci run-era-test-node
+        run: |
+          git clone https://github.com/matter-labs/era-test-node.git
+          make setup-ci run-era-test-node
 
       - name: Compile and deploy ExecutionHelper.
         run:  make compile-and-deploy-execution-helper 
