@@ -5,7 +5,6 @@
 setup: era-test-node setup-execution-helper setup-seaport
 
 # Clones the `era-test-node` into `./era-test-node/`.
-.PHONY: era-test-node
 era-test-node: 
 	git clone --depth 1 git@github.com:matter-labs/era-test-node.git
 
