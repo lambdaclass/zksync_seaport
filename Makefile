@@ -6,8 +6,10 @@ start-node-from-release-binary:
 	curl -LO https://github.com/matter-labs/era-test-node/releases/download/v0.1.0-alpha.10/era_test_node-v0.1.0-alpha.10-x86_64-unknown-linux-gnu.tar.gz
 	tar -zxvf era_test_node-v0.1.0-alpha.10-x86_64-unknown-linux-gnu.tar.gz && chmod +x ./era_test_node && ./era_test_node run &
 
-setup-ci: start-node-from-release-binary setup-execution-helper setup-seaport
+npm-ci-deps:
 	npm install -g node-gyp
+setup-ci: start-node-from-release-binary npm-ci-deps setup-execution-helper setup-seaport
+	
 
 # ------------------------------------------------------------------------------
 # Development environment setup:
