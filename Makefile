@@ -7,6 +7,7 @@ start-node-from-release-binary:
 	tar -zxvf era_test_node-v0.1.0-alpha.10-x86_64-unknown-linux-gnu.tar.gz && chmod +x ./era_test_node && ./era_test_node run &
 
 setup-ci: start-node-from-release-binary setup-execution-helper setup-seaport
+	npm install -g node-gyp
 
 # ------------------------------------------------------------------------------
 # Development environment setup:
