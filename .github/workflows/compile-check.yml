@@ -29,5 +29,7 @@ jobs:
           wait-on: |
               http://localhost:8011
 
+          wait-for: 15m
+
       - name: Compile and deploy ExecutionHelper.
         run:  make compile-and-deploy-execution-helper 
