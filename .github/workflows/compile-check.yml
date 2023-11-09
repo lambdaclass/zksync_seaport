@@ -8,12 +8,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up cargo cache
-        uses: Swatinem/rust-cache@v2
-
-      - name: Rust nightly install
-        uses: dtolnay/rust-toolchain@nightly
-
       - name: Set up Node.js 18.18
         uses: actions/setup-node@v3
         with:
@@ -22,8 +16,8 @@ jobs:
       - name: Initial setup and start node
         uses: JarvusInnovations/background-action@v1
         with:
-          run: |
-            make -n setup-ci
+          run: make setup-ci
+
           wait-on: |
               http://localhost:8011
 
