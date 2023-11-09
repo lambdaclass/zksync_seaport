@@ -13,14 +13,8 @@ jobs:
         with:
           node-version: 18.18
 
-      - name: Install dependencies
-        run: yarn install
+      - name: Initial setup and start node
+        run: make setup run-era-test-node
 
       - name: Compile and deploy ExecutionHelper.
-        run: |
-          yarn install
-          cd ExecutionHelper
-          echo $(pwd)
-          yarn install
-          yarn run hardhat compile
-          yarn run hardhat deploy-zksync --script deploy.ts
+        run:  make compile-and-deploy-execution-helper 
