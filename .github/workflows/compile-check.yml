@@ -17,7 +17,7 @@ jobs:
       - name: Install needed deps
         uses: borales/actions-yarn@v4
         with:
-          yarn add seaport-sol seaport-core solady 
+          cmd: add seaport-sol seaport-core solady 
 
       - name: Run install
         uses: borales/actions-yarn@v4
