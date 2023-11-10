@@ -23,4 +23,7 @@ jobs:
       - name: Compile and deploy ExecutionHelper.
         working-directory: ./ExecutionHelper
         run: make compile-and-deploy-execution-helper
+
+      - name: Compile Seaport
+        run: yarn hardhat compile
           
