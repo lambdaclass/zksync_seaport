@@ -16,16 +16,9 @@ jobs:
       - name: Run Era Test Node
         uses: dutterbutter/era-test-node-action@latest
 
-      - name: Check server has started
-        run: |
-         sleep 10 && curl --request POST \
-                    --url http://localhost:8011/ \
-                    --header 'content-type: application/json' \
-                    --data '{ "jsonrpc": "2.0", "id": "1", "method": "eth_chainId", "params": []}'
-
       - name: Setup project dependencies 
         run: |
-          yarn global add node-gyp && yarn install
+          yarn global add node-gyp@10.0.1 && yarn install
 
       - name: Compile and deploy ExecutionHelper.
         working-directory: ./ExecutionHelper
