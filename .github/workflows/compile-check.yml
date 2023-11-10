@@ -13,12 +13,14 @@ jobs:
         with:
           node-version: 18.18
 
-      - name: Wait for node to start
-        uses: ./
-        with:
-          start: make start-node-from-release-binary
-          wait-on: 'http://localhost:8011'
-          wait-on-timeout: 110
+      - name: Setup test-node 
+        run: |
+          make start-node-from-release-binary &
+
+      - name: Check server has started
+        run: |
+         sleep 10 && curl -I http://localhost:8011
+         
 
       - name: Compile and deploy ExecutionHelper.
         run:  make compile-and-deploy-execution-helper 
