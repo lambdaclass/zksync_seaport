@@ -36,5 +36,8 @@ jobs:
             -H "Content-Type: application/json" \
             --data '{"method":"eth_chainId","params":[],"id":1,"jsonrpc":"2.0"}'
 
+      - name: Run js test script (FIXME delete this)
+        run: node test.js
+
       - name: Compile and deploy ExecutionHelper.
         run: make compile-and-deploy-execution-helper
