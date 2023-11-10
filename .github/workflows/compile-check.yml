@@ -14,7 +14,9 @@ jobs:
           node-version: 18.18
 
       - name: Run Era Test Node
-        uses: dutterbutter/era-test-node-action@latest
+        uses: isbang/compose-action@v1.5.1
+        with:
+          compose-file: "./docker-compose.yml"
 
       - name: Setup project dependencies 
         run: |
