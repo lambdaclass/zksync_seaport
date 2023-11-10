@@ -13,8 +13,6 @@ jobs:
         with:
           node-version: 18.18
 
-      - name: Start node
-
       - name: Wait for node to start
         uses: ./
         with:
