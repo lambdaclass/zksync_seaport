@@ -41,3 +41,7 @@ jobs:
 
       - name: Compile and deploy ExecutionHelper.
         run: make compile-and-deploy-execution-helper
+
+      - name: Print era-test-node logs
+        if: always()
+        run: cat ./era_test_node.log
