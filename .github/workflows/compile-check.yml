@@ -22,8 +22,5 @@ jobs:
 
       - name: Compile and deploy ExecutionHelper.
         working-directory: ./ExecutionHelper
-        run: |
-          yarn install
-          yarn hardhat compile
-          yarn hardhat deploy-zksync --script deploy.ts --network inMemoryNode
+        run: make compile-and-deploy-execution-helper
           
