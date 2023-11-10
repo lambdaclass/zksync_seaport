@@ -30,4 +30,5 @@ jobs:
           cd ExecutionHelper
           yarn install
           yarn hardhat compile
+          yarn hardhat deploy-zksync --script deploy.ts --network inMemoryNode
           
