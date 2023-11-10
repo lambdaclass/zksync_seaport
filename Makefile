@@ -2,7 +2,7 @@
 # Development environment setup:
 # ------------------------------------------------------------------------------
 
-setup: era-test-node setup-execution-helper setup-seaport
+setup: setup-execution-helper setup-seaport
 
 # Clones the `era-test-node` into `./era-test-node/`.
 era-test-node: 
