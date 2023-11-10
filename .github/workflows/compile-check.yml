@@ -21,7 +21,6 @@ jobs:
           yarn global add node-gyp@10.0.1 && yarn install
 
       - name: Compile and deploy ExecutionHelper.
-        working-directory: ./ExecutionHelper
         run: make compile-and-deploy-execution-helper
 
       - name: Compile Seaport
