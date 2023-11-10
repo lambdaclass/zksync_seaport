@@ -16,10 +16,9 @@ jobs:
       - name: Start node
         uses: JarvusInnovations/background-action@v1
         with:
-          run: make start-node-from-release-binary
+          run: curl -LO https://github.com/matter-labs/era-test-node/releases/download/v0.1.0-alpha.10/era_test_node-v0.1.0-alpha.10-x86_64-unknown-linux-gnu.tar.gz
 
-          wait-on: |
-              http://localhost:8011
+          wait-on: http://localhost:8011
 
           wait-for: 5m
 
