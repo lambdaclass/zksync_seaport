@@ -13,10 +13,10 @@ jobs:
         with:
           node-version: 18.18
 
-      - name: Initial setup and start node
+      - name: Start node
         uses: JarvusInnovations/background-action@v1
         with:
-          run: make setup-ci
+          run: make start-node-from-release-binary
 
           wait-on: |
               http://localhost:8011
