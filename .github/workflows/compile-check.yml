@@ -23,6 +23,12 @@ jobs:
             -H "Content-Type: application/json" \
             --data '{"method":"eth_chainId","params":[],"id":1,"jsonrpc":"2.0"}'
 
+      - name: Reconfigure git to use HTTP instead of SSH
+        run: |
+          git config --global url."https://github.com/".insteadOf git@github.com:
+          git config --global url."https://github.com/".insteadOf ssh://git@github.com/
+          git config --global url."https://".insteadOf git://
+
       - name: Setup project dependencies 
         run: |
           yarn global add node-gyp@10.0.1 && yarn install
