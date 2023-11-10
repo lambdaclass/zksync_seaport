@@ -27,10 +27,8 @@ jobs:
         run: |
           yarn global add node-gyp@10.0.1 && yarn install
 
+      - name: Setup project
+        run: make setup
+
       - name: Compile and deploy ExecutionHelper.
-        working-directory: ./ExecutionHelper
-        run: |
-          yarn install
-          yarn hardhat compile
-          yarn hardhat deploy-zksync --script deploy.ts --network inMemoryNode
-          
+        run: make compile-and-deploy-execution-helper
