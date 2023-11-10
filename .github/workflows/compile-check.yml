@@ -21,9 +21,9 @@ jobs:
         run: |
           make wait-for-node-to-start
 
-      - name: Hardhat install
+      - name: Setup dependencies 
         run: |
-          yarn add hardhat
+          yarn install
 
       - name: Compile and deploy ExecutionHelper.
         run:  make compile-and-deploy-execution-helper 
