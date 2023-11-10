@@ -26,4 +26,8 @@ jobs:
           yarn global add node-gyp && yarn install
 
       - name: Compile and deploy ExecutionHelper.
-        run:  make compile-and-deploy-execution-helper 
+        run: |
+          cd ExecutionHelper
+          yarn install
+          yarn hardhat compile
+          
