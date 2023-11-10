@@ -18,7 +18,7 @@ jobs:
       - name: Setup node and yarn
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: "18.x"
 
       - name: Check that ./yarn.lock is up to date.
         run: yarn install --frozen-lockfile
