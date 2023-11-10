@@ -8,7 +8,7 @@ setup: era-test-node setup-execution-helper setup-seaport
 era-test-node: 
 	git clone --depth 1 git@github.com:matter-labs/era-test-node.git
 
-.PHONY: setup-execution-helper 
+.PHONY: setup-execution-helper
 setup-execution-helper: 
 	cd ExecutionHelper && yarn install 
 
