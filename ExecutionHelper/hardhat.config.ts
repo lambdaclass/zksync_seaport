@@ -27,7 +27,7 @@ const config: HardhatUserConfig = {
     },
     inMemoryNode: {
       url: "http://localhost:8011",
-      ethNetwork: "", // in-memory node doesn't support eth node; removing this line will cause an error
+      ethNetwork: null, // in-memory node doesn't support eth node; removing this line will cause an error
       zksync: true,
     },
     hardhat: {
@@ -45,5 +45,5 @@ const config: HardhatUserConfig = {
     version: "0.8.17",
   },
 };
-
+console.log(config);
 export default config;

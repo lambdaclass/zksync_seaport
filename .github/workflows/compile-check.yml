@@ -14,9 +14,7 @@ jobs:
           node-version: 18.18
 
       - name: Run Era Test Node
-        uses: isbang/compose-action@v1.5.1
-        with:
-          compose-file: "./docker-compose.yml"
+        uses: dutterbutter/era-test-node-action@latest
 
       - name: Setup project dependencies 
         run: |
@@ -27,5 +25,5 @@ jobs:
         run: |
           yarn install
           yarn hardhat compile
-          yarn hardhat deploy-zksync --script deploy.ts --network dockerizedNode
+          yarn hardhat deploy-zksync --script deploy.ts --network inMemoryNode
           
