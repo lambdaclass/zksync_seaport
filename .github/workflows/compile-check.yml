@@ -21,8 +21,8 @@ jobs:
           yarn global add node-gyp@10.0.1 && yarn install
 
       - name: Compile and deploy ExecutionHelper.
-        run: make compile-and-deploy-execution-helper
+        run: make setup-execution-helper compile-and-deploy-execution-helper
 
       - name: Compile Seaport
-        run: make compile-only-seaport
+        run: make setup-seaport && yarn hardhat compile
           
