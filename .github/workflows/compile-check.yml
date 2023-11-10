@@ -23,7 +23,7 @@ jobs:
 
       - name: Setup dependencies 
         run: |
-          yarn install
+          yarn global add node-gyp && yarn install
 
       - name: Compile and deploy ExecutionHelper.
         run:  make compile-and-deploy-execution-helper 
