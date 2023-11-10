@@ -33,9 +33,11 @@ compile-and-deploy-execution-helper:
 	cd ExecutionHelper && yarn install && yarn hardhat compile && yarn hardhat deploy-zksync --script deploy.ts --network inMemoryNode
 
 .PHONY: compile-seaport
-compile-seaport: compile-and-deploy-execution-helper
-	yarn hardhat compile 
+compile-seaport: compile-and-deploy-execution-helper compile-only-seaport
 
+.PHONY: compile-only-seaport
+compile-only-seaport:
+	yarn hardhat compile
 # ------------------------------------------------------------------------------
 # Developer tools:
 # ------------------------------------------------------------------------------
