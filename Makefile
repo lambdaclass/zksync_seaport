@@ -2,7 +2,7 @@
 # Development environment setup:
 # ------------------------------------------------------------------------------
 
-setup: era-test-node setup-execution-helper setup-seaport
+setup: setup-execution-helper setup-seaport
 
 # Clones the `era-test-node` into `./era-test-node/`.
 era-test-node: 
@@ -30,7 +30,7 @@ update.era-test-node: ./era-test-node
 
 .PHONY: compile-and-deploy-execution-helper
 compile-and-deploy-execution-helper:
-	cd ExecutionHelper && yarn hardhat compile && yarn hardhat deploy-zksync --script deploy.ts
+	cd ExecutionHelper && yarn hardhat compile && yarn hardhat deploy-zksync --script deploy.ts --network inMemoryNode
 
 .PHONY: compile-seaport
 compile-seaport: compile-and-deploy-execution-helper

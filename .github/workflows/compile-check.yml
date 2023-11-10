@@ -1,0 +1,53 @@
+name: CI
+on: [push]
+
+jobs:
+  build:
+    name: Contract compile check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js 18.18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.18
+
+      - name: Run Era Test Node
+        uses: dutterbutter/era-test-node-action@latest
+        with:
+          showCalls: all
+          # showStorageLogs: all
+          # showVmDetails: all
+          # showGasDetails: all
+          log: debug
+
+      - name: Reconfigure git to use HTTP instead of SSH
+        run: |
+          git config --global url."https://github.com/".insteadOf git@github.com:
+          git config --global url."https://github.com/".insteadOf ssh://git@github.com/
+          git config --global url."https://".insteadOf git://
+
+      - name: Setup project dependencies 
+        run: |
+          yarn global add node-gyp@10.0.1 && yarn install
+
+      - name: Setup project
+        run: make setup
+
+      - name: Assert that era-test-node is running
+        run: |
+          curl http://localhost:8011/ \
+            -X POST \
+            -H "Content-Type: application/json" \
+            --data '{"method":"eth_chainId","params":[],"id":1,"jsonrpc":"2.0"}'
+
+      - name: Run js test script (FIXME delete this)
+        run: node test.js
+
+      - name: Compile and deploy ExecutionHelper.
+        run: make compile-and-deploy-execution-helper
+
+      - name: Print era-test-node logs
+        if: always()
+        run: cat ./era_test_node.log
