@@ -25,5 +25,5 @@ jobs:
         run: make compile-and-deploy-execution-helper
 
       - name: Compile Seaport
-        run: yarn hardhat compile
+        run: make compile-seaport
           
