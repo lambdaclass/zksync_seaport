@@ -8,7 +8,7 @@ setup: era-test-node setup-execution-helper setup-seaport
 era-test-node: 
 	git clone --depth 1 git@github.com:matter-labs/era-test-node.git
 
-.PHONY: setup-execution-helper 
+.PHONY: setup-execution-helper
 setup-execution-helper: 
 	cd ExecutionHelper && yarn install 
 
@@ -30,14 +30,12 @@ update.era-test-node: ./era-test-node
 
 .PHONY: compile-and-deploy-execution-helper
 compile-and-deploy-execution-helper:
-	cd ExecutionHelper && yarn install && yarn hardhat compile && yarn hardhat deploy-zksync --script deploy.ts --network inMemoryNode
+	cd ExecutionHelper && yarn hardhat compile && yarn hardhat deploy-zksync --script deploy.ts
 
 .PHONY: compile-seaport
-compile-seaport: compile-and-deploy-execution-helper compile-only-seaport
+compile-seaport: compile-and-deploy-execution-helper
+	yarn hardhat compile 
 
-.PHONY: compile-only-seaport
-compile-only-seaport:
-	yarn hardhat compile
 # ------------------------------------------------------------------------------
 # Developer tools:
 # ------------------------------------------------------------------------------
