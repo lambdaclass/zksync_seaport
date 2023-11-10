@@ -14,13 +14,13 @@ jobs:
           node-version: 18.18
 
       - name: Start node
-        uses: JarvusInnovations/background-action@v1
+
+      - name: Wait for node to start
+        uses: ./
         with:
-          run: echo "Testing node..."
-
-          wait-on: http://localhost:8011
-
-          wait-for: 5m
+          start: make start-node-from-release-binary
+          wait-on: 'http://localhost:8011'
+          wait-on-timeout: 110
 
       - name: Compile and deploy ExecutionHelper.
         run:  make compile-and-deploy-execution-helper 
