@@ -21,13 +21,13 @@ const config: HardhatUserConfig = {
       verifyURL: "https://zksync2-mainnet-explorer.zksync.io/contract_verification",
     },
     dockerizedNode: {
-      url: "http://localhost:3050",
-      ethNetwork: "http://localhost:8545",
+      url: "http://127.0.0.1:3050",
+      ethNetwork: "http://127.0.0.1:8545",
       zksync: true,
     },
     inMemoryNode: {
       url: "http://127.0.0.1:8011",
-      ethNetwork: null, // in-memory node doesn't support eth node; removing this line will cause an error
+      ethNetwork: "", // in-memory node doesn't support eth node; removing this line will cause an error
       zksync: true,
     },
     hardhat: {
@@ -45,5 +45,5 @@ const config: HardhatUserConfig = {
     version: "0.8.17",
   },
 };
-console.log(config);
+
 export default config;
