@@ -6,6 +6,18 @@ start-node-from-release-binary:
 	curl -LO https://github.com/matter-labs/era-test-node/releases/download/v0.1.0-alpha.10/era_test_node-v0.1.0-alpha.10-x86_64-unknown-linux-gnu.tar.gz
 	tar -zxvf era_test_node-v0.1.0-alpha.10-x86_64-unknown-linux-gnu.tar.gz && chmod +x ./era_test_node && ./era_test_node run &
 
+wait-for-node-to-start:
+				 sleep 10 &&
+				 curl --request POST \
+										--url http://localhost:8011/ \
+										--header 'content-type: application/json' \
+										--data '{
+									"jsonrpc": "2.0",
+									"id": "1",
+									"method": "eth_getBalance",
+									"params": ["0x36615Cf349d7F6344891B1e7CA7C72883F5dc049", "latest"]
+							}'
+
 npm-ci-deps:
 	npm install -g node-gyp
 

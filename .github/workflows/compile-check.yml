@@ -19,17 +19,7 @@ jobs:
 
       - name: Check server has started
         run: |
-         sleep 10 &&
-         curl --request POST \
-                    --url http://localhost:8011/ \
-                    --header 'content-type: application/json' \
-                    --data '{
-                  "jsonrpc": "2.0",
-                  "id": "1",
-                  "method": "eth_getBalance",
-                  "params": ["0x36615Cf349d7F6344891B1e7CA7C72883F5dc049", "latest"]
-              }'
-         
+          make wait-for-node-to-start
 
       - name: Compile and deploy ExecutionHelper.
         run:  make compile-and-deploy-execution-helper 
