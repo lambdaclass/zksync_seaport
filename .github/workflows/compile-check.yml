@@ -16,13 +16,6 @@ jobs:
       - name: Run Era Test Node
         uses: dutterbutter/era-test-node-action@latest
 
-      - name: Assert that era-test-node is running
-        run: |
-          curl http://localhost:8011/ \
-            -X POST \
-            -H "Content-Type: application/json" \
-            --data '{"method":"eth_chainId","params":[],"id":1,"jsonrpc":"2.0"}'
-
       - name: Reconfigure git to use HTTP instead of SSH
         run: |
           git config --global url."https://github.com/".insteadOf git@github.com:
@@ -35,6 +28,13 @@ jobs:
 
       - name: Setup project
         run: make setup
+
+      - name: Assert that era-test-node is running
+        run: |
+          curl http://localhost:8011/ \
+            -X POST \
+            -H "Content-Type: application/json" \
+            --data '{"method":"eth_chainId","params":[],"id":1,"jsonrpc":"2.0"}'
 
       - name: Compile and deploy ExecutionHelper.
         run: make compile-and-deploy-execution-helper
