@@ -1,0 +1,28 @@
+name: CI
+on: [push]
+
+jobs:
+  build:
+    name: Contract compile check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js 18.18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.18
+
+      - name: Run Era Test Node
+        uses: dutterbutter/era-test-node-action@latest
+
+      - name: Setup project dependencies 
+        run: |
+          yarn global add node-gyp@10.0.1 && yarn install
+
+      - name: Compile and deploy ExecutionHelper.
+        run: make setup-execution-helper compile-and-deploy-execution-helper
+
+      - name: Compile Seaport
+        run: make setup-seaport && yarn hardhat compile
+          
