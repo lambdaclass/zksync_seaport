@@ -16,6 +16,13 @@ jobs:
       - name: Run Era Test Node
         uses: dutterbutter/era-test-node-action@latest
 
+      - name: Assert that era-test-node is running
+        run: |
+          curl http://localhost:8011/ \
+            -X POST \
+            -H "Content-Type: application/json" \
+            --data '{"method":"eth_chainId","params":[],"id":1,"jsonrpc":"2.0"}'
+
       - name: Setup project dependencies 
         run: |
           yarn global add node-gyp@10.0.1 && yarn install
