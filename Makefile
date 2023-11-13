@@ -1,8 +1,16 @@
+.PHONY: compile setup setup-era-test-node
+
 # ------------------------------------------------------------------------------
-# Development environment setup:
+# Main:
 # ------------------------------------------------------------------------------
 
 setup: setup-era-test-node setup-seaport
+
+compile: compile-seaport
+
+# ------------------------------------------------------------------------------
+# Development environment setup:
+# ------------------------------------------------------------------------------
 
 setup-era-test-node:
 	[ -d "./era-test-node" ] || git clone --depth 1 git@github.com:matter-labs/era-test-node.git && \
