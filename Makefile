@@ -2,7 +2,7 @@
 # Development environment setup:
 # ------------------------------------------------------------------------------
 
-setup: setup-era-test-node setup-execution-helper setup-seaport
+setup: setup-era-test-node setup-seaport
 
 setup-era-test-node:
 	[ -d "./era-test-node" ] || git clone --depth 1 git@github.com:matter-labs/era-test-node.git && \
@@ -13,7 +13,7 @@ setup-execution-helper:
 	cd ExecutionHelper && yarn install 
 
 .PHONY: setup-seaport
-setup-seaport: 
+setup-seaport: setup-execution-helper
 	yarn install
 
 # ------------------------------------------------------------------------------
