@@ -36,7 +36,7 @@ compile-and-deploy-execution-helper:
 
 .PHONY: compile-seaport
 compile-seaport: compile-and-deploy-execution-helper
-	yarn hardhat compile 
+	yarn hardhat compile
 
 # ------------------------------------------------------------------------------
 # Developer tools:
