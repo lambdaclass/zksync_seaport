@@ -22,7 +22,9 @@ setup-seaport: setup-execution-helper
 
 .PHONY: update.era-test-node
 update.era-test-node: ./era-test-node
-	cd era-test-node && git pull
+	cd era-test-node && \
+	git pull && \
+	cargo install --path .
 
 # ------------------------------------------------------------------------------
 # Compile:
