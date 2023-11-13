@@ -43,5 +43,5 @@ compile-seaport: compile-and-deploy-execution-helper
 # ------------------------------------------------------------------------------
 
 .PHONY: run-era-test-node
-run-era-test-node: era-test-node
-	cd era-test-node && cargo +nightly run -- --show-calls=all --resolve-hashes run
+run-era-test-node:
+	era_test_node --show-calls=all --resolve-hashes run
