@@ -2,11 +2,11 @@
 # Development environment setup:
 # ------------------------------------------------------------------------------
 
-setup: era-test-node setup-execution-helper setup-seaport
+setup: setup-era-test-node setup-execution-helper setup-seaport
 
-# Clones the `era-test-node` into `./era-test-node/`.
-era-test-node: 
-	git clone --depth 1 git@github.com:matter-labs/era-test-node.git
+setup-era-test-node:
+	[ -d "./era-test-node" ] || git clone --depth 1 git@github.com:matter-labs/era-test-node.git && \
+	cd era-test-node && cargo install --path .
 
 .PHONY: setup-execution-helper
 setup-execution-helper: 
