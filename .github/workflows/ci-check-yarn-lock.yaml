@@ -1,0 +1,28 @@
+name: Check `yarn.lock`s are up to date
+on:
+  merge_group:
+  push:
+    branches: [main]
+  pull_request:
+    branches: ["*"]
+
+jobs:
+  check-yarn-lock:
+    name: "Check yarn locks"
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout sources
+        uses: actions/checkout@v3
+
+      - name: Setup node and yarn
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18.x"
+
+      - name: Check that ./yarn.lock is up to date.
+        run: yarn install --frozen-lockfile
+
+      - name: Check that ./ExecutionHelper/yarn.lock is up to date.
+        run: yarn install --frozen-lockfile
+        working-directory: ./ExecutionHelper
