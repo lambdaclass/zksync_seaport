@@ -43,3 +43,13 @@ compile-seaport: compile-and-deploy-execution-helper
 .PHONY: run-era-test-node
 run-era-test-node: era-test-node
 	cd era-test-node && cargo +nightly run -- --show-calls=all --resolve-hashes run
+
+# ------------------------------------------------------------------------------
+# Clean:
+# ------------------------------------------------------------------------------
+
+.PHONY: clean-execution-helper
+clean-execution-helper: cd ExecutionHelper && yarn hardhat clean && yarn cache clean
+
+
+clean: clean-execution-helper yarn hardhat clean
