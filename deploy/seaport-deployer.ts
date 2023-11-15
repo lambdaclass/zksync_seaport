@@ -37,7 +37,7 @@ export default async function () {
   const creationCode = transaction.data;
   console.log('safecreate');
   
-  const transferHelper_address = await immutableCreate2.safeCreate2(bytesFormat , creationCode, {gasLimit: 1000000}); 
+  const transferHelper_address = await immutableCreate2.safeCreate2(bytesFormat, creationCode, {gasLimit: 1000000}); 
   console.log('Result:', transferHelper_address);
 
  
