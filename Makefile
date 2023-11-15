@@ -46,18 +46,9 @@ compile-seaport: compile-execution-helper deploy-execution-helper
 run-era-test-node: era-test-node
 	cd era-test-node && cargo +nightly run -- --show-calls=all --resolve-hashes run
 
-# Copy .env examples, which are pre-configured for the era-test-node.
-%/.env: %/.env.example
-	cp $< $@
-
-# Copy .env examples, which are pre-configured for the era-test-node.
-.env: .env.example
-	cp $< $@
-
-# Copy .env files required for the era-test-node. This is defined as an optional
-# step to let the user choice their settings.
-.PHONY: era-test-node-dotenv
-era-test-node-dotenv: .env ExecutionHelper/.env
+.PHONY: clean
+env:
+	source .env
 
 # ------------------------------------------------------------------------------
 # Clean:

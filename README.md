@@ -7,7 +7,6 @@ Seaport implementation on zkSync Era. Seaport is a marketplace protocol for safe
 ```
 git clone git@github.com:LambdaClass/zksync_seaport.git`
 cd zksync_seaport
-make era-test-node-dotenv
 make setup
 make compile-seaport
 make deploy-seaport
