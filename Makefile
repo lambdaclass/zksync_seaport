@@ -1,3 +1,5 @@
+.PHONY: clean env deploy-execution-helper deploy-seaport deploy
+
 # ------------------------------------------------------------------------------
 # Development environment setup:
 # ------------------------------------------------------------------------------
@@ -29,11 +31,12 @@ update.era-test-node: ./era-test-node
 # ------------------------------------------------------------------------------
 
 .PHONY: compile-and-deploy-execution-helper
-compile-and-deploy-execution-helper:
-	cd ExecutionHelper && yarn hardhat compile && yarn hardhat deploy-zksync --script deploy.ts
+compile-execution-helper:
+	cd ExecutionHelper && \
+	yarn hardhat compile
 
 .PHONY: compile-seaport
-compile-seaport: compile-and-deploy-execution-helper
+compile-seaport: compile-execution-helper deploy-execution-helper
 	yarn hardhat compile 
 
 # ------------------------------------------------------------------------------
@@ -44,12 +47,38 @@ compile-seaport: compile-and-deploy-execution-helper
 run-era-test-node: era-test-node
 	cd era-test-node && cargo +nightly run -- --show-calls=all --resolve-hashes run
 
+env:
+	source .env
+
 # ------------------------------------------------------------------------------
 # Clean:
 # ------------------------------------------------------------------------------
 
 .PHONY: clean-execution-helper
-clean-execution-helper: cd ExecutionHelper && yarn hardhat clean && yarn cache clean
+clean-execution-helper: 
+	cd ExecutionHelper && \
+	yarn hardhat clean && \
+	yarn cache clean
 
+clean-seaport:
+	yarn hardhat clean && \
+	yarn cache clean
 
-clean: clean-execution-helper yarn hardhat clean
+clean: clean-execution-helper clean-seaport
+	yarn hardhat clean
+
+# ------------------------------------------------------------------------------
+# Deploy:
+# ------------------------------------------------------------------------------
+
+# The name of this target is good for now. If in the future we'd add more libs
+# this should be a general target for deploying all of them befor deploying the
+# concret project.
+deploy-execution-helper:
+	cd ExecutionHelper && \
+	yarn hardhat deploy-zksync --script deploy.ts
+
+deploy-seaport:
+	yarn hardhat deploy-zksync --script seaport-deployer.ts
+
+deploy: deploy-execution-helper deploy-seaport
