@@ -1,9 +1,8 @@
-.PHONY: clean env deploy-execution-helper deploy-seaport deploy
-
 # ------------------------------------------------------------------------------
 # Development environment setup:
 # ------------------------------------------------------------------------------
 
+.PHONY: clean
 setup: era-test-node setup-execution-helper setup-seaport
 
 # Clones the `era-test-node` into `./era-test-node/`.
@@ -47,6 +46,7 @@ compile-seaport: compile-execution-helper deploy-execution-helper
 run-era-test-node: era-test-node
 	cd era-test-node && cargo +nightly run -- --show-calls=all --resolve-hashes run
 
+.PHONY: clean
 env:
 	source .env
 
@@ -60,10 +60,12 @@ clean-execution-helper:
 	yarn hardhat clean && \
 	yarn cache clean
 
+.PHONY: clean
 clean-seaport:
 	yarn hardhat clean && \
 	yarn cache clean
 
+.PHONY: clean
 clean: clean-execution-helper clean-seaport
 	yarn hardhat clean
 
@@ -74,11 +76,14 @@ clean: clean-execution-helper clean-seaport
 # The name of this target is good for now. If in the future we'd add more libs
 # this should be a general target for deploying all of them befor deploying the
 # concret project.
+.PHONY: clean
 deploy-execution-helper:
 	cd ExecutionHelper && \
 	yarn hardhat deploy-zksync --script deploy.ts
 
+.PHONY: clean
 deploy-seaport:
 	yarn hardhat deploy-zksync --script seaport-deployer.ts
 
+.PHONY: clean
 deploy: deploy-execution-helper deploy-seaport
