@@ -31,11 +31,12 @@ update.era-test-node: ./era-test-node
 # ------------------------------------------------------------------------------
 
 .PHONY: compile-and-deploy-execution-helper
-compile-and-deploy-execution-helper:
-	cd ExecutionHelper && yarn hardhat compile && yarn hardhat deploy-zksync --script deploy.ts
+compile-execution-helper:
+	cd ExecutionHelper && \
+	yarn hardhat compile
 
 .PHONY: compile-seaport
-compile-seaport: compile-and-deploy-execution-helper
+compile-seaport: compile-execution-helper deploy-execution-helper
 	yarn hardhat compile 
 
 # ------------------------------------------------------------------------------
@@ -58,3 +59,17 @@ clean-execution-helper:
 
 clean: clean-execution-helper 
 	yarn hardhat clean
+
+# ------------------------------------------------------------------------------
+# Deploy:
+# ------------------------------------------------------------------------------
+
+# The name of this target is good for now. If in the future we'd add more libs
+# this should be a general target for deploying all of them befor deploying the
+# concret project.
+deploy-execution-helper:
+	cd ExecutionHelper && /
+	yarn hardhat deploy-zksync --script deploy.ts
+
+deploy-seaport:
+	yarn hardhat deploy-zksync --script seaport-deployer.ts
