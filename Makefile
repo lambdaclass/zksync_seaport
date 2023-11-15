@@ -1,3 +1,5 @@
+.PHONY: clean
+
 # ------------------------------------------------------------------------------
 # Development environment setup:
 # ------------------------------------------------------------------------------
@@ -49,7 +51,10 @@ run-era-test-node: era-test-node
 # ------------------------------------------------------------------------------
 
 .PHONY: clean-execution-helper
-clean-execution-helper: cd ExecutionHelper && yarn hardhat clean && yarn cache clean
+clean-execution-helper: 
+	cd ExecutionHelper && \
+	yarn hardhat clean && \
+	yarn cache clean
 
-
-clean: clean-execution-helper yarn hardhat clean
+clean: clean-execution-helper 
+	yarn hardhat clean
