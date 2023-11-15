@@ -16,13 +16,16 @@ jobs:
       - name: Run Era Test Node
         uses: dutterbutter/era-test-node-action@latest
 
-      - name: Setup project dependencies 
+      - name: Add node-gyp dependency
         run: |
           yarn global add node-gyp@10.0.1 && yarn install
 
-      - name: Compile and deploy ExecutionHelper.
-        run: make setup-execution-helper compile-and-deploy-execution-helper
+      - name: Setup project
+        run: make setup
 
       - name: Compile Seaport
-        run: make setup-seaport && yarn hardhat compile
+        run: make compile-seaport
+
+      - name: Deploy Seaport
+        run: make deploy-seaport
           
