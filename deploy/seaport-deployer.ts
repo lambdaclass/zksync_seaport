@@ -6,6 +6,8 @@ const PRIVATE_KEY = process.env.WALLET_PRIVATE_KEY || "";
 if (!PRIVATE_KEY) throw "⛔️ Private key not detected! Add it to the .env file!";
 
 export default async function () {
+  const provider = await getProvider();
+  const salt = "0x00000000000000000000000000000000000000000000fcc21169b803f25d2210";
 
   // Deploy CREATE2-related contracts
   const immutableCreate2FactoryInterfaceArtifact = "ImmutableCreate2Factory";
@@ -25,20 +27,11 @@ export default async function () {
   const transferHelperArtifact = "TransferHelper";
   const transferHelper = await deployContract(transferHelperArtifact, [coduitController.address]);
 
-  const salt = "0x00000000000000000000000000000000000000000000fcc21169b803f25d2210";
   const bytesFormat = ethers.utils.arrayify(salt);
 
-  
-  console.log('provider');
-  const provider = await getProvider();
-  console.log('transaction');
   const transaction = await provider.getTransaction(transferHelper.deployTransaction.hash);
-  console.log('code');
   const creationCode = transaction.data;
-  console.log('safecreate');
   
-  const transferHelper_address = await immutableCreate2.safeCreate2(bytesFormat, creationCode, {gasLimit: 1000000}); 
-  console.log('Result:', transferHelper_address);
-
- 
+  const transferHelper_address = await immutableCreate2.safeCreate2(bytesFormat , creationCode, {gasLimit: 1000000}); 
+   
 }
