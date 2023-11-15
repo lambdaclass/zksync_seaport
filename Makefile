@@ -46,10 +46,6 @@ compile-seaport: compile-execution-helper deploy-execution-helper
 run-era-test-node: era-test-node
 	cd era-test-node && cargo +nightly run -- --show-calls=all --resolve-hashes run
 
-.PHONY: clean
-env:
-	source .env
-
 # ------------------------------------------------------------------------------
 # Clean:
 # ------------------------------------------------------------------------------
@@ -60,7 +56,7 @@ clean-execution-helper:
 	yarn hardhat clean && \
 	yarn cache clean
 
-.PHONY: clean
+.PHONY: clean-seaport
 clean-seaport:
 	yarn hardhat clean && \
 	yarn cache clean
@@ -76,14 +72,14 @@ clean: clean-execution-helper clean-seaport
 # The name of this target is good for now. If in the future we'd add more libs
 # this should be a general target for deploying all of them befor deploying the
 # concret project.
-.PHONY: clean
+.PHONY: deploy-execution-helper
 deploy-execution-helper:
 	cd ExecutionHelper && \
 	yarn hardhat deploy-zksync --script deploy.ts
 
-.PHONY: clean
+.PHONY: deploy-seaport
 deploy-seaport:
 	yarn hardhat deploy-zksync --script seaport-deployer.ts
 
-.PHONY: clean
+.PHONY: deploy
 deploy: deploy-execution-helper deploy-seaport
