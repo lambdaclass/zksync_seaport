@@ -2,7 +2,7 @@
 # Development environment setup:
 # ------------------------------------------------------------------------------
 
-.PHONY: clean
+.PHONY: setup
 setup: era-test-node setup-execution-helper setup-seaport
 
 # Clones the `era-test-node` into `./era-test-node/`.
@@ -54,16 +54,15 @@ run-era-test-node: era-test-node
 clean-execution-helper: 
 	cd ExecutionHelper && \
 	yarn hardhat clean && \
-	yarn cache clean
+	rm -rf node_modules
 
 .PHONY: clean-seaport
 clean-seaport:
 	yarn hardhat clean && \
-	yarn cache clean
+	rm -rf node_modules
 
 .PHONY: clean
 clean: clean-execution-helper clean-seaport
-	yarn hardhat clean
 
 # ------------------------------------------------------------------------------
 # Deploy:
