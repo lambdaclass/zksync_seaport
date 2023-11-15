@@ -57,7 +57,11 @@ clean-execution-helper:
 	yarn hardhat clean && \
 	yarn cache clean
 
-clean: clean-execution-helper 
+clean-seaport:
+	yarn hardhat clean && \
+	yarn cache clean
+
+clean: clean-execution-helper clean-seaport
 	yarn hardhat clean
 
 # ------------------------------------------------------------------------------
@@ -68,7 +72,7 @@ clean: clean-execution-helper
 # this should be a general target for deploying all of them befor deploying the
 # concret project.
 deploy-execution-helper:
-	cd ExecutionHelper && /
+	cd ExecutionHelper && \
 	yarn hardhat deploy-zksync --script deploy.ts
 
 deploy-seaport:
