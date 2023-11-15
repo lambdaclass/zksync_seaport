@@ -1,4 +1,4 @@
-.PHONY: clean
+.PHONY: clean env deploy-execution-helper deploy-seaport deploy
 
 # ------------------------------------------------------------------------------
 # Development environment setup:
@@ -47,6 +47,9 @@ compile-seaport: compile-execution-helper deploy-execution-helper
 run-era-test-node: era-test-node
 	cd era-test-node && cargo +nightly run -- --show-calls=all --resolve-hashes run
 
+env:
+	source .env
+
 # ------------------------------------------------------------------------------
 # Clean:
 # ------------------------------------------------------------------------------
@@ -77,3 +80,5 @@ deploy-execution-helper:
 
 deploy-seaport:
 	yarn hardhat deploy-zksync --script seaport-deployer.ts
+
+deploy: deploy-execution-helper deploy-seaport
