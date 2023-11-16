@@ -63,7 +63,6 @@ clean-seaport:
 
 .PHONY: clean
 clean: clean-execution-helper clean-seaport
-	yarn hardhat clean
 
 # ------------------------------------------------------------------------------
 # Deploy:
