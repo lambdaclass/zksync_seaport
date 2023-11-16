@@ -1,20 +1,29 @@
+.PHONY: compile setup install-era-test-node deploy
+
+# ------------------------------------------------------------------------------
+# Main:
+# ------------------------------------------------------------------------------
+
+setup: install-era-test-node setup-seaport
+
+compile: compile-seaport
+
+deploy: deploy-execution-helper deploy-seaport
+
 # ------------------------------------------------------------------------------
 # Development environment setup:
 # ------------------------------------------------------------------------------
 
-.PHONY: clean
-setup: era-test-node setup-execution-helper setup-seaport
-
-# Clones the `era-test-node` into `./era-test-node/`.
-era-test-node: 
-	git clone --depth 1 git@github.com:matter-labs/era-test-node.git
+install-era-test-node:
+	[ -d "./era-test-node" ] || git clone --depth 1 git@github.com:matter-labs/era-test-node.git && \
+	cd era-test-node && cargo install --path .
 
 .PHONY: setup-execution-helper
 setup-execution-helper: 
 	cd ExecutionHelper && yarn install 
 
 .PHONY: setup-seaport
-setup-seaport: 
+setup-seaport: setup-execution-helper
 	yarn install
 
 # ------------------------------------------------------------------------------
@@ -23,7 +32,9 @@ setup-seaport:
 
 .PHONY: update.era-test-node
 update.era-test-node: ./era-test-node
-	cd era-test-node && git pull
+	cd era-test-node && \
+	git pull && \
+	cargo install --path .
 
 # ------------------------------------------------------------------------------
 # Compile:
@@ -43,8 +54,8 @@ compile-seaport: compile-execution-helper deploy-execution-helper
 # ------------------------------------------------------------------------------
 
 .PHONY: run-era-test-node
-run-era-test-node: era-test-node
-	cd era-test-node && cargo +nightly run -- --show-calls=all --resolve-hashes run
+run-era-test-node:
+	era_test_node --show-calls=all --resolve-hashes --show-gas-details=all run
 
 # ------------------------------------------------------------------------------
 # Clean:
@@ -63,7 +74,6 @@ clean-seaport:
 
 .PHONY: clean
 clean: clean-execution-helper clean-seaport
-	yarn hardhat clean
 
 # ------------------------------------------------------------------------------
 # Deploy:
@@ -80,6 +90,3 @@ deploy-execution-helper:
 .PHONY: deploy-seaport
 deploy-seaport:
 	yarn hardhat deploy-zksync --script seaport-deployer.ts
-
-.PHONY: deploy
-deploy: deploy-execution-helper deploy-seaport

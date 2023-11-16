@@ -71,15 +71,13 @@ type DeployContractOptions = {
    */ 
   wallet?: Wallet
 }
-export const deployContract = async (contractArtifactName: string, constructorArguments?: any[], options?: DeployContractOptions) => {
+export const deployContract = async (deployer: Deployer, wallet: Wallet, contractArtifactName: string, constructorArguments?: any[], options?: DeployContractOptions) => {
   const log = (message: string) => {
     if (!options?.silent) console.log(message);
   }
 
   log(`\nStarting deployment process of "${contractArtifactName}"...`);
   
-  const wallet = options?.wallet ?? getWallet();
-  const deployer = new Deployer(hre, wallet);
   const artifact = await deployer.loadArtifact(contractArtifactName).catch((error) => {
     if (error?.message?.includes(`Artifact for contract "${contractArtifactName}" not found.`)) {
       console.error(error.message);
