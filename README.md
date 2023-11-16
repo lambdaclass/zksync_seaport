@@ -1,29 +1,19 @@
 # zksync_seaport
+
 Seaport implementation on zkSync Era. Seaport is a marketplace protocol for safely and efficiently buying and selling NFTs.
 
-## Running `era-test-node`
-
-### Setup
-
-Clone the `era-test-node` repo.
+## How to run the project
 
 ```
+git clone git@github.com:LambdaClass/zksync_seaport.git`
+cd zksync_seaport
 make setup
-
+make compile-seaport
+make deploy-seaport
 ```
 
-### Update
-
-Updates `era-test-node`.
+## Cleanup the project
 
 ```
-make update
-```
-
-### Run
-
-Runs `era-test-node`.
-
-```
-make run
+make clean
 ```
