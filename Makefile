@@ -1,10 +1,10 @@
-.PHONY: compile setup setup-era-test-node
+.PHONY: compile setup install-era-test-node
 
 # ------------------------------------------------------------------------------
 # Main:
 # ------------------------------------------------------------------------------
 
-setup: setup-era-test-node setup-seaport
+setup: install-era-test-node setup-seaport
 
 compile: compile-seaport
 
@@ -12,7 +12,7 @@ compile: compile-seaport
 # Development environment setup:
 # ------------------------------------------------------------------------------
 
-setup-era-test-node:
+install-era-test-node:
 	[ -d "./era-test-node" ] || git clone --depth 1 git@github.com:matter-labs/era-test-node.git && \
 	cd era-test-node && cargo install --path .
 
