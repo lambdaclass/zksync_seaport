@@ -21,7 +21,6 @@ export default async function () {
   const salt = getSalt(wallet.address);
 
   const immutableCreate2 = await deployContract(deployer, wallet, "ImmutableCreate2Factory");
-  immutableCreate2.findCreate2Address(salt, "0x");
 
   // Deploy conduit-related contracts
   const coduitControllerArtifact = "ConduitController";
