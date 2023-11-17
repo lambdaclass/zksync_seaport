@@ -3,12 +3,14 @@ import { ItemType } from "@opensea/seaport-js/lib/constants";
 import { ethers } from "ethers";
 import { getProvider, getWallet } from "./utils";
 
+const NFT_ADDRESS = "0x76F668B5faED818d6F1b848aDf910d58f71539A4";
+
 // Listing an ERC-721 for 10 ETH and fulfilling it
 export default async function () {
     const provider = getProvider();
     const wallet = getWallet(); 
-    const seaporContractAddress = "0x4AabcFA6A4085dEeb5DfB72E458E3E97f53906CF";
-    const seaport = new Seaport(provider, { overrides: { contractAddress: seaporContractAddress } });
+    const seaportContractAddress = "0x4AabcFA6A4085dEeb5DfB72E458E3E97f53906CF";
+    const seaport = new Seaport(provider, { overrides: { contractAddress: seaportContractAddress } });
 
     const offerer = wallet.address;
     // const fulfiller = "0x70997970c51812dc3a010c7d01b50e0d17dc79c8";
@@ -17,7 +19,7 @@ export default async function () {
             offer: [
                 {
                     itemType: ItemType.ERC721,
-                    token: "0x76F668B5faED818d6F1b848aDf910d58f71539A4",
+                    token: NFT_ADDRESS,
                     identifier: "1",
                 },
             ],

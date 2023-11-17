@@ -13,5 +13,5 @@ export default async function() {
   const contractArtifactName = "GameItem";
   const nft = await deployContract(deployer, wallet, contractArtifactName);
   const tx = await nft.awardItem(wallet.address, "https://imgur.com/gallery/AwyDb9Z");
-  const tx_receipt = await tx.wait();
+  await tx.wait();
 }
