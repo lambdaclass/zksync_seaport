@@ -17,7 +17,7 @@
     "@matterlabs/zksync-contracts": "^0.6.1",
     "@nomiclabs/hardhat-ethers": "^2.2.3",
     "@nomiclabs/hardhat-etherscan": "^3.1.7",
-    "@opensea/seaport-js": "latest",
+    "@opensea/seaport-js": "^2.0.8",
     "@openzeppelin/contracts": "^4.9.3",
     "@types/chai": "^4.3.4",
     "@types/mocha": "^10.0.1",
