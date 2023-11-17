@@ -10,10 +10,7 @@ if (!PRIVATE_KEY) throw "⛔️ Private key not detected! Add it to the .env fil
 
 export function getSalt(sender: Address): string {
   const lastBytes = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("lambda")).slice(0, 26);
-  console.log(`lastbytes: ${lastBytes}`)
   const salt = ethers.utils.concat([sender, lastBytes]);
-  console.log(`sender: ${sender}`)
-  console.log(`salt: ${salt}`)
   return ethers.utils.hexlify(salt);
 }
 
