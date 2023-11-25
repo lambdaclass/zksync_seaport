@@ -1,6 +1,5 @@
 import { HardhatUserConfig } from "hardhat/config";
-import * as fs from 'fs';
-
+import * as fs from "fs";
 import "@matterlabs/hardhat-zksync-node";
 import "@matterlabs/hardhat-zksync-deploy";
 import "@matterlabs/hardhat-zksync-solc";
@@ -8,9 +7,12 @@ import "@matterlabs/hardhat-zksync-verify";
 
 function readContractAddressFromFile(filePath: string): string {
   try {
-    return fs.readFileSync(filePath, 'utf8').trim();
+    return fs.readFileSync(filePath, "utf8").trim();
   } catch (err) {
-    const msg = (err.code === 'ENOENT') ? `ERROR: address file not found ${filePath}` : `Error reading the file ${filePath}`;
+    const msg =
+      err.code === "ENOENT"
+        ? `ERROR: address file not found ${filePath}`
+        : `Error reading the file ${filePath}`;
     console.log(msg);
     return msg;
   }
@@ -23,13 +25,15 @@ const config: HardhatUserConfig = {
       url: "https://testnet.era.zksync.dev",
       ethNetwork: "goerli",
       zksync: true,
-      verifyURL: "https://zksync2-testnet-explorer.zksync.dev/contract_verification",
+      verifyURL:
+        "https://zksync2-testnet-explorer.zksync.dev/contract_verification",
     },
     zkSyncMainnet: {
       url: "https://mainnet.era.zksync.io",
       ethNetwork: "mainnet",
       zksync: true,
-      verifyURL: "https://zksync2-mainnet-explorer.zksync.io/contract_verification",
+      verifyURL:
+        "https://zksync2-mainnet-explorer.zksync.io/contract_verification",
     },
     dockerizedNode: {
       url: "http://127.0.0.1:3050",
@@ -41,6 +45,12 @@ const config: HardhatUserConfig = {
       ethNetwork: "", // in-memory node doesn't support eth node; removing this line will cause an error
       zksync: true,
     },
+    alfajores: {
+      url: "https://alfajores-forno.celo-testnet.org",
+      ethNetwork: "",
+      chainId: 44787,
+      zksync: true,
+    },
     hardhat: {
       zksync: true,
     },
@@ -50,7 +60,9 @@ const config: HardhatUserConfig = {
     settings: {
       libraries: {
         "ExecutionHelper/contracts/ExecutionHelper.sol": {
-          ExecutionHelper: readContractAddressFromFile("./ExecutionHelper/.executionHelper.address"),
+          ExecutionHelper: readContractAddressFromFile(
+            "./ExecutionHelper/.executionHelper.address"
+          ),
         },
       },
       // find all available options in the official documentation
