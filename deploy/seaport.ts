@@ -1,199 +1,256 @@
 import { providers as multicallProviders } from "@0xsequence/multicall";
 
 import type {
-    SeaportConfig,
-    CreateOrderAction,
-    CreateOrderInput,
-    DomainRegistryContract,
-    OrderUseCase,
-    OrderWithCounter,
-    SeaportContract,
-    Signer,
+  SeaportConfig,
+  CreateOrderAction,
+  CreateOrderInput,
+  DomainRegistryContract,
+  ExchangeAction,
+  InputCriteria,
+  Order,
+  OrderComponents,
+  OrderStatus,
+  OrderUseCase,
+  OrderWithCounter,
+  TipInputItem,
+  TransactionMethods,
+  ContractMethodReturnType,
+  MatchOrdersFulfillment,
+  SeaportContract,
+  Signer,
+  ApprovalAction,
+  CreateBulkOrdersAction,
 } from "./types";
 
-import { executeAllActions, getTransactionMethods } from "./usecase";
-import { DomainRegistryABI } from "./abi/DomainRegistry";
-import { SeaportABIv14,  } from "./abi/Seaport_v1_4";
 import {
-    Contract,
-    constants,
-    providers,
-} from "ethers";
+  SEAPORT_CONTRACT_NAME,
+  EIP_712_ORDER_TYPE,
+  MAX_INT,
+  OrderType,
+  SEAPORT_CONTRACT_VERSION_V1_5,
+  SEAPORT_CONTRACT_VERSION_V1_4,
+} from "./constants";
 
-import * as fs from 'fs';
+import { getMaximumSizeForOrder, isCurrencyItem } from "./utils/item";
+import { executeAllActions, getTransactionMethods } from "./utils/usecase";
+import { getApprovalActions } from "./utils/approval";
+import { getBulkOrderTree } from "./utils/eip712/bulk-orders";
+import {
+  fulfillAvailableOrders,
+  fulfillBasicOrder,
+  FulfillOrdersMetadata,
+  fulfillStandardOrder,
+  shouldUseBasicFulfill,
+  validateAndSanitizeFromOrderStatus,
+} from "./utils/fulfill";
+import {
+  getBalancesAndApprovals,
+  validateOfferBalancesAndApprovals,
+} from "./utils/balanceAndApprovalCheck";
+import {
+  areAllCurrenciesSame,
+  deductFees,
+  feeToConsiderationItem,
+  generateRandomSalt,
+  mapInputItemToOfferItem,
+  totalItemsAmount,
+} from "./utils/order";
+import { DomainRegistryABI } from "./abi/DomainRegistry";
+import { SeaportABIv14 } from "./abi/Seaport_v1_4";
+import {
+  Contract,
+  constants,
+  ethers,
+  BigNumber,
+  BigNumberish,
+  PayableOverrides,
+  providers,
+} from "ethers";
+import { _TypedDataEncoder } from "ethers/lib/utils";
+
+import { Web3Provider } from "zksync-web3";
+
+import * as fs from "fs";
 
 function readContractAddressFromFile(filePath: string): string {
-    try {
-      return fs.readFileSync(filePath, 'utf8').trim();
-    } catch (err) {
-      const msg = (err.code === 'ENOENT') ? `ERROR: address file not found ${filePath}` : `Error reading the file ${filePath}`;
-      console.log(msg);
-      return msg;
-    }
+  try {
+    return fs.readFileSync(filePath, "utf8").trim();
+  } catch (err) {
+    const msg =
+      err.code === "ENOENT"
+        ? `ERROR: address file not found ${filePath}`
+        : `Error reading the file ${filePath}`;
+    console.log(msg);
+    return msg;
+  }
 }
 
 export class Seaport {
-    // Provides the raw interface to the contract for flexibility
-    public contract: SeaportContract;
-  
-    public domainRegistry: DomainRegistryContract;
-  
-    private provider: providers.Provider;
-  
-    private signer?: Signer;
-  
-    // Use the multicall provider for reads for batching and performance optimisations
-    // NOTE: Do NOT await between sequential requests if you're intending to batch
-    // instead, use Promise.all() and map to fetch data in parallel
-    // https://www.npmjs.com/package/@0xsequence/multicall
-    private multicallProvider: multicallProviders.MulticallProvider;
-  
-    private config: Required<Omit<SeaportConfig, "overrides">>;
-  
-    private defaultConduitKey: string;
-  
-    readonly OPENSEA_CONDUIT_KEY: string = OPENSEA_CONDUIT_KEY;
-  
-    /**
-     * @param providerOrSigner - The provider or signer to use for web3-related calls
-     * @param considerationConfig - A config to provide flexibility in the usage of Seaport
-     */
-    public constructor(
-      providerOrSigner: providers.JsonRpcProvider | Signer,
-      {
-        overrides,
-        // Five minute buffer
-        ascendingAmountFulfillmentBuffer = 300,
-        balanceAndApprovalChecksOnOrderCreation = true,
-        conduitKeyToConduit,
-        seaportVersion = "1.5",
-      }: SeaportConfig = {},
-    ) {
-      const provider =
-        providerOrSigner instanceof providers.Provider
-          ? providerOrSigner
-          : providerOrSigner.provider;
-      this.signer = (providerOrSigner as Signer)._isSigner
-        ? (providerOrSigner as Signer)
-        : undefined;
-  
-      if (!provider) {
-        throw new Error(
-          "Either a provider or custom signer with provider must be provided",
-        );
-      }
-  
-      this.provider = provider;
-  
-      this.multicallProvider = new multicallProviders.MulticallProvider(
-        this.provider,
+  // Provides the raw interface to the contract for flexibility
+  public contract: SeaportContract;
+
+  public domainRegistry: DomainRegistryContract;
+
+  private provider = new Web3Provider(window.ethereum);
+
+  private signer?: Signer;
+
+  // Use the multicall provider for reads for batching and performance optimisations
+  // NOTE: Do NOT await between sequential requests if you're intending to batch
+  // instead, use Promise.all() and map to fetch data in parallel
+  // https://www.npmjs.com/package/@0xsequence/multicall
+  private multicallProvider: multicallProviders.MulticallProvider;
+
+  private config: Required<Omit<SeaportConfig, "overrides">>;
+
+  private defaultConduitKey: string;
+
+  readonly OPENSEA_CONDUIT_KEY: string = OPENSEA_CONDUIT_KEY;
+
+  /**
+   * @param providerOrSigner - The provider or signer to use for web3-related calls
+   * @param considerationConfig - A config to provide flexibility in the usage of Seaport
+   */
+  public constructor(
+    providerOrSigner: providers.JsonRpcProvider | Signer,
+    {
+      overrides,
+      // Five minute buffer
+      ascendingAmountFulfillmentBuffer = 300,
+      balanceAndApprovalChecksOnOrderCreation = true,
+      conduitKeyToConduit,
+      seaportVersion = "1.5",
+    }: SeaportConfig = {}
+  ) {
+    const provider =
+      providerOrSigner instanceof providers.Provider
+        ? providerOrSigner
+        : providerOrSigner.provider;
+    this.signer = (providerOrSigner as Signer)._isSigner
+      ? (providerOrSigner as Signer)
+      : undefined;
+
+    if (!provider) {
+      throw new Error(
+        "Either a provider or custom signer with provider must be provided"
       );
-
-      const seaportAddress = readContractAddressFromFile("./deploy/.constants.seaport");
-  
-      this.contract = new Contract(
-        overrides?.contractAddress ?? seaportAddress,
-        SeaportABIv14,
-        this.multicallProvider,
-      ) as SeaportContract;
-
-      const domainRegistryAddress = readContractAddressFromFile("./deploy/.constants.domainRegistry");
-  
-      this.domainRegistry = new Contract(
-        overrides?.domainRegistryAddress ?? domainRegistryAddress,
-        DomainRegistryABI,
-        this.multicallProvider,
-      ) as DomainRegistryContract;
-
-      const conduitAddress = readContractAddressFromFile("./deploy/.constants.conduit");
-
-      const KNOWN_CONDUIT_KEYS_TO_CONDUIT = {
-        [OPENSEA_CONDUIT_KEY]: conduitAddress,
-      };
-
-      const NO_CONDUIT = constants.HashZero;
-  
-      this.config = {
-        ascendingAmountFulfillmentBuffer,
-        balanceAndApprovalChecksOnOrderCreation,
-        conduitKeyToConduit: {
-          ...KNOWN_CONDUIT_KEYS_TO_CONDUIT,
-          [NO_CONDUIT]: this.contract.address,
-          ...conduitKeyToConduit,
-        },
-        seaportVersion,
-      };
-  
-      this.defaultConduitKey = overrides?.defaultConduitKey ?? NO_CONDUIT;
-    }
-  
-    /**
-     * Returns a use case that will create an order.
-     * The use case will contain the list of actions necessary to finish creating an order.
-     * The list of actions will either be an approval if approvals are necessary
-     * or a signature request that will then be supplied into the final Order struct, ready to be fulfilled.
-     *
-     * @param input
-     * @param input.conduitKey The conduitKey key to derive where to source your approvals from. Defaults to 0 which refers to the Seaport contract.
-     *                         Another special value is address(1) will refer to the legacy proxy. All other must derive to the specified address.
-     * @param input.zone The zone of the order. Defaults to the zero address.
-     * @param input.startTime The start time of the order. Defaults to the current unix time.
-     * @param input.endTime The end time of the order. Defaults to "never end".
-     *                      It is HIGHLY recommended to pass in an explicit end time
-     * @param input.offer The items you are willing to offer. This is a condensed version of the Seaport struct OfferItem for convenience
-     * @param input.consideration The items that will go to their respective recipients upon receiving your offer.
-     * @param input.counter The counter from which to create the order with. Automatically fetched from the contract if not provided
-     * @param input.allowPartialFills Whether to allow the order to be partially filled
-     * @param input.restrictedByZone Whether the order should be restricted by zone
-     * @param input.fees Convenience array to apply fees onto the order. The fees will be deducted from the
-     *                   existing consideration items and then tacked on as new consideration items
-     * @param input.domain An optional domain to be hashed and included in the first four bytes of the random salt.
-     * @param input.salt Arbitrary salt. If not passed in, a random salt will be generated with the first four bytes being the domain hash or empty.
-     * @param input.offerer The order's creator address. Defaults to the first address on the provider.
-     * @param accountAddress Optional address for which to create the order with
-     * @param exactApproval optional boolean to indicate whether the approval should be exact or not
-     * @returns a use case containing the list of actions needed to be performed in order to create the order
-     */
-    public async createOrder(
-      input: CreateOrderInput,
-      accountAddress?: string,
-      exactApproval?: boolean,
-    ): Promise<OrderUseCase<CreateOrderAction>> {
-      const signer = this._getSigner(accountAddress);
-      const offerer = accountAddress ?? (await signer.getAddress());
-  
-      const { orderComponents, approvalActions } = await this._formatOrder(
-        signer,
-        offerer,
-        Boolean(exactApproval),
-        input,
-      );
-  
-      const createOrderAction = {
-        type: "create",
-        getMessageToSign: () => {
-          return this._getMessageToSign(orderComponents);
-        },
-        createOrder: async () => {
-          const signature = await this.signOrder(orderComponents, offerer);
-  
-          return {
-            parameters: orderComponents,
-            signature,
-          };
-        },
-      } as const;
-  
-      const actions = [...approvalActions, createOrderAction] as const;
-  
-      return {
-        actions,
-        executeAllActions: () =>
-          executeAllActions(actions) as Promise<OrderWithCounter>,
-      };
     }
 
-    /**
+    this.multicallProvider = new multicallProviders.MulticallProvider(
+      this.provider
+    );
+
+    const seaportAddress = readContractAddressFromFile(
+      "./deploy/.constants.seaport"
+    );
+
+    this.contract = new Contract(
+      overrides?.contractAddress ?? seaportAddress,
+      SeaportABIv14,
+      this.multicallProvider
+    ) as SeaportContract;
+
+    const domainRegistryAddress = readContractAddressFromFile(
+      "./deploy/.constants.domainRegistry"
+    );
+
+    this.domainRegistry = new Contract(
+      overrides?.domainRegistryAddress ?? domainRegistryAddress,
+      DomainRegistryABI,
+      this.multicallProvider
+    ) as DomainRegistryContract;
+
+    const conduitAddress = readContractAddressFromFile(
+      "./deploy/.constants.conduit"
+    );
+
+    const KNOWN_CONDUIT_KEYS_TO_CONDUIT = {
+      [OPENSEA_CONDUIT_KEY]: conduitAddress,
+    };
+
+    const NO_CONDUIT = constants.HashZero;
+
+    this.config = {
+      ascendingAmountFulfillmentBuffer,
+      balanceAndApprovalChecksOnOrderCreation,
+      conduitKeyToConduit: {
+        ...KNOWN_CONDUIT_KEYS_TO_CONDUIT,
+        [NO_CONDUIT]: this.contract.address,
+        ...conduitKeyToConduit,
+      },
+      seaportVersion,
+    };
+
+    this.defaultConduitKey = overrides?.defaultConduitKey ?? NO_CONDUIT;
+  }
+
+  /**
+   * Returns a use case that will create an order.
+   * The use case will contain the list of actions necessary to finish creating an order.
+   * The list of actions will either be an approval if approvals are necessary
+   * or a signature request that will then be supplied into the final Order struct, ready to be fulfilled.
+   *
+   * @param input
+   * @param input.conduitKey The conduitKey key to derive where to source your approvals from. Defaults to 0 which refers to the Seaport contract.
+   *                         Another special value is address(1) will refer to the legacy proxy. All other must derive to the specified address.
+   * @param input.zone The zone of the order. Defaults to the zero address.
+   * @param input.startTime The start time of the order. Defaults to the current unix time.
+   * @param input.endTime The end time of the order. Defaults to "never end".
+   *                      It is HIGHLY recommended to pass in an explicit end time
+   * @param input.offer The items you are willing to offer. This is a condensed version of the Seaport struct OfferItem for convenience
+   * @param input.consideration The items that will go to their respective recipients upon receiving your offer.
+   * @param input.counter The counter from which to create the order with. Automatically fetched from the contract if not provided
+   * @param input.allowPartialFills Whether to allow the order to be partially filled
+   * @param input.restrictedByZone Whether the order should be restricted by zone
+   * @param input.fees Convenience array to apply fees onto the order. The fees will be deducted from the
+   *                   existing consideration items and then tacked on as new consideration items
+   * @param input.domain An optional domain to be hashed and included in the first four bytes of the random salt.
+   * @param input.salt Arbitrary salt. If not passed in, a random salt will be generated with the first four bytes being the domain hash or empty.
+   * @param input.offerer The order's creator address. Defaults to the first address on the provider.
+   * @param accountAddress Optional address for which to create the order with
+   * @param exactApproval optional boolean to indicate whether the approval should be exact or not
+   * @returns a use case containing the list of actions needed to be performed in order to create the order
+   */
+  public async createOrder(
+    input: CreateOrderInput,
+    accountAddress?: string,
+    exactApproval?: boolean
+  ): Promise<OrderUseCase<CreateOrderAction>> {
+    const signer = this._getSigner(accountAddress);
+    const offerer = accountAddress ?? (await signer.getAddress());
+
+    const { orderComponents, approvalActions } = await this._formatOrder(
+      signer,
+      offerer,
+      Boolean(exactApproval),
+      input
+    );
+
+    const createOrderAction = {
+      type: "create",
+      getMessageToSign: () => {
+        return this._getMessageToSign(orderComponents);
+      },
+      createOrder: async () => {
+        const signature = await this.signOrder(orderComponents, offerer);
+
+        return {
+          parameters: orderComponents,
+          signature,
+        };
+      },
+    } as const;
+
+    const actions = [...approvalActions, createOrderAction] as const;
+
+    return {
+      actions,
+      executeAllActions: () =>
+        executeAllActions(actions) as Promise<OrderWithCounter>,
+    };
+  }
+
+  /**
    * Returns a use case that will create bulk orders.
    * The use case will contain the list of actions necessary to finish creating the orders.
    * The list of actions will either be an approval if approvals are necessary
@@ -206,7 +263,7 @@ export class Seaport {
   public async createBulkOrders(
     createOrderInput: CreateOrderInput[],
     accountAddress?: string,
-    exactApproval?: boolean,
+    exactApproval?: boolean
   ): Promise<OrderUseCase<CreateBulkOrdersAction>> {
     const signer = this._getSigner(accountAddress);
     const offerer = await signer.getAddress();
@@ -221,7 +278,7 @@ export class Seaport {
         signer,
         offerer,
         Boolean(exactApproval),
-        input,
+        input
       );
 
       allOrderComponents.push(orderComponents);
@@ -278,7 +335,7 @@ export class Seaport {
       fees,
       domain,
       salt,
-    }: CreateOrderInput,
+    }: CreateOrderInput
   ) {
     const offerItems = offer.map(mapInputItemToOfferItem);
     const considerationItems = [
@@ -296,12 +353,12 @@ export class Seaport {
       })
     ) {
       throw new Error(
-        "All currency tokens in the order must be the same token when applying fees",
+        "All currency tokens in the order must be the same token when applying fees"
       );
     }
 
     const currencies = [...offerItems, ...considerationItems].filter(
-      isCurrencyItem,
+      isCurrencyItem
     );
 
     const totalCurrencyAmount = totalItemsAmount(currencies);
@@ -322,7 +379,7 @@ export class Seaport {
               token: currencies[0].token,
               baseAmount: totalCurrencyAmount.startAmount,
               baseEndAmount: totalCurrencyAmount.endAmount,
-            }),
+            })
           ) ?? []
         : []),
     ];
@@ -369,7 +426,7 @@ export class Seaport {
       const approvals = getApprovalActions(
         insufficientApprovals,
         exactApproval,
-        signer,
+        signer
       );
       approvalActions.push(...approvals);
     }
@@ -440,8 +497,8 @@ export class Seaport {
       _TypedDataEncoder.getPayload(
         domainData,
         EIP_712_ORDER_TYPE,
-        orderComponents,
-      ),
+        orderComponents
+      )
     );
   }
 
@@ -459,7 +516,7 @@ export class Seaport {
     const chunks = tree.getDataToSign();
 
     return JSON.stringify(
-      _TypedDataEncoder.getPayload(domainData, bulkOrderType, { tree: chunks }),
+      _TypedDataEncoder.getPayload(domainData, bulkOrderType, { tree: chunks })
     );
   }
 
@@ -471,7 +528,7 @@ export class Seaport {
    */
   public async signOrder(
     orderComponents: OrderComponents,
-    accountAddress?: string,
+    accountAddress?: string
   ): Promise<string> {
     const signer = this._getSigner(accountAddress);
 
@@ -480,7 +537,7 @@ export class Seaport {
     let signature = await signer._signTypedData(
       domainData,
       EIP_712_ORDER_TYPE,
-      orderComponents,
+      orderComponents
     );
 
     // Use EIP-2098 compact signatures to save gas.
@@ -499,7 +556,7 @@ export class Seaport {
    */
   public async signBulkOrder(
     orderComponents: OrderComponents[],
-    accountAddress?: string,
+    accountAddress?: string
   ): Promise<OrderWithCounter[]> {
     const signer = this._getSigner(accountAddress);
 
@@ -512,7 +569,7 @@ export class Seaport {
     let signature = await signer._signTypedData(
       domainData,
       bulkOrderType,
-      value,
+      value
     );
 
     // Use EIP-2098 compact signatures to save gas.
@@ -541,7 +598,7 @@ export class Seaport {
     orders: OrderComponents[],
     accountAddress?: string,
     domain?: string,
-    overrides?: PayableOverrides,
+    overrides?: PayableOverrides
   ): TransactionMethods<ContractMethodReturnType<SeaportContract, "cancel">> {
     const signer = this._getSigner(accountAddress);
 
@@ -549,7 +606,7 @@ export class Seaport {
       this.contract.connect(signer),
       "cancel",
       [orders, overrides],
-      domain,
+      domain
     );
   }
 
@@ -563,7 +620,7 @@ export class Seaport {
   public bulkCancelOrders(
     offerer?: string,
     domain?: string,
-    overrides?: PayableOverrides,
+    overrides?: PayableOverrides
   ): TransactionMethods<
     ContractMethodReturnType<SeaportContract, "incrementCounter">
   > {
@@ -573,7 +630,7 @@ export class Seaport {
       this.contract.connect(signer),
       "incrementCounter",
       [overrides],
-      domain,
+      domain
     );
   }
 
@@ -590,7 +647,7 @@ export class Seaport {
     orders: Order[],
     accountAddress?: string,
     domain?: string,
-    overrides?: PayableOverrides,
+    overrides?: PayableOverrides
   ): TransactionMethods<ContractMethodReturnType<SeaportContract, "validate">> {
     const signer = this._getSigner(accountAddress);
 
@@ -598,7 +655,7 @@ export class Seaport {
       this.contract.connect(signer),
       "validate",
       [orders, overrides],
-      domain,
+      domain
     );
   }
 
@@ -634,13 +691,13 @@ export class Seaport {
     const orderTypeString = `${orderComponentsPartialTypeString}${considerationItemTypeString}${offerItemTypeString}`;
 
     const offerItemTypeHash = ethers.utils.keccak256(
-      ethers.utils.toUtf8Bytes(offerItemTypeString),
+      ethers.utils.toUtf8Bytes(offerItemTypeString)
     );
     const considerationItemTypeHash = ethers.utils.keccak256(
-      ethers.utils.toUtf8Bytes(considerationItemTypeString),
+      ethers.utils.toUtf8Bytes(considerationItemTypeString)
     );
     const orderTypeHash = ethers.utils.keccak256(
-      ethers.utils.toUtf8Bytes(orderTypeString),
+      ethers.utils.toUtf8Bytes(orderTypeString)
     );
 
     const offerHash = ethers.utils.keccak256(
@@ -666,11 +723,11 @@ export class Seaport {
                       .toHexString()
                       .slice(2)
                       .padStart(64, "0"),
-                  ].join(""),
+                  ].join("")
               )
               .slice(2);
           })
-          .join(""),
+          .join("")
     );
 
     const considerationHash = ethers.utils.keccak256(
@@ -685,7 +742,7 @@ export class Seaport {
                     considerationItem.itemType.toString().padStart(64, "0"),
                     considerationItem.token.slice(2).padStart(64, "0"),
                     ethers.BigNumber.from(
-                      considerationItem.identifierOrCriteria,
+                      considerationItem.identifierOrCriteria
                     )
                       .toHexString()
                       .slice(2)
@@ -699,11 +756,11 @@ export class Seaport {
                       .slice(2)
                       .padStart(64, "0"),
                     considerationItem.recipient.slice(2).padStart(64, "0"),
-                  ].join(""),
+                  ].join("")
               )
               .slice(2);
           })
-          .join(""),
+          .join("")
     );
 
     const derivedOrderHash = ethers.utils.keccak256(
@@ -733,7 +790,7 @@ export class Seaport {
             .toHexString()
             .slice(2)
             .padStart(64, "0"),
-        ].join(""),
+        ].join("")
     );
 
     return derivedOrderHash;
@@ -844,7 +901,7 @@ export class Seaport {
 
     const sanitizedOrder = validateAndSanitizeFromOrderStatus(
       order,
-      orderStatus,
+      orderStatus
     );
 
     const timeBasedItemParams = {
@@ -885,7 +942,7 @@ export class Seaport {
           domain,
           overrides,
         },
-        exactApproval,
+        exactApproval
       );
     }
 
@@ -914,7 +971,7 @@ export class Seaport {
         domain,
         overrides,
       },
-      exactApproval,
+      exactApproval
     );
   }
 
@@ -965,23 +1022,23 @@ export class Seaport {
 
     const allOffererOperators = fulfillOrderDetails.map(
       ({ order }) =>
-        this.config.conduitKeyToConduit[order.parameters.conduitKey],
+        this.config.conduitKeyToConduit[order.parameters.conduitKey]
     );
 
     const fulfillerOperator = this.config.conduitKeyToConduit[conduitKey];
 
     const allOfferItems = fulfillOrderDetails.flatMap(
-      ({ order }) => order.parameters.offer,
+      ({ order }) => order.parameters.offer
     );
 
     const allConsiderationItems = fulfillOrderDetails.flatMap(
-      ({ order }) => order.parameters.consideration,
+      ({ order }) => order.parameters.consideration
     );
     const allOfferCriteria = fulfillOrderDetails.flatMap(
-      ({ offerCriteria = [] }) => offerCriteria,
+      ({ offerCriteria = [] }) => offerCriteria
     );
     const allConsiderationCriteria = fulfillOrderDetails.flatMap(
-      ({ considerationCriteria = [] }) => considerationCriteria,
+      ({ considerationCriteria = [] }) => considerationCriteria
     );
 
     const [
@@ -998,8 +1055,8 @@ export class Seaport {
             criterias: offerCriteria,
             operator: allOffererOperators[i],
             multicallProvider: this.multicallProvider,
-          }),
-        ),
+          })
+        )
       ),
       // Get fulfiller balances and approvals of all items in the set, as offer items
       // may be received by the fulfiller for standard fulfills
@@ -1013,8 +1070,8 @@ export class Seaport {
       this.multicallProvider.getBlock("latest"),
       Promise.all(
         fulfillOrderDetails.map(({ order }) =>
-          this.getOrderStatus(this.getOrderHash(order.parameters)),
-        ),
+          this.getOrderStatus(this.getOrderHash(order.parameters))
+        )
       ),
     ]);
 
@@ -1033,7 +1090,7 @@ export class Seaport {
         extraData: orderDetails.extraData ?? "0x",
         offererBalancesAndApprovals: offerersBalancesAndApprovals[index],
         offererOperator: allOffererOperators[index],
-      }),
+      })
     );
 
     return fulfillAvailableOrders({
@@ -1085,7 +1142,7 @@ export class Seaport {
       this.contract.connect(signer),
       "matchOrders",
       [orders, fulfillments, overrides],
-      domain,
+      domain
     );
   }
 
@@ -1099,7 +1156,7 @@ export class Seaport {
   public setDomain(
     domain: string,
     accountAddress?: string,
-    overrides?: PayableOverrides,
+    overrides?: PayableOverrides
   ): TransactionMethods<
     ContractMethodReturnType<DomainRegistryContract, "setDomain">
   > {
@@ -1108,7 +1165,7 @@ export class Seaport {
     return getTransactionMethods(
       this.domainRegistry.connect(signer),
       "setDomain",
-      [domain, overrides],
+      [domain, overrides]
     );
   }
 
@@ -1148,11 +1205,11 @@ export class Seaport {
 
       const domainArray = Promise.all(
         [...Array(totalDomains).keys()].map((i) =>
-          this.domainRegistry.getDomain(tag, i),
-        ),
+          this.domainRegistry.getDomain(tag, i)
+        )
       );
 
       return domainArray;
     }
   }
-}  
+}

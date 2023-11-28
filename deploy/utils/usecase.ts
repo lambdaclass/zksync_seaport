@@ -8,7 +8,7 @@ import {
   OrderUseCase,
   TransactionMethods,
   ContractMethodReturnType,
-} from "./types";
+} from "../types";
 
 export const executeAllActions = async <
   T extends CreateOrderAction | CreateBulkOrdersAction | ExchangeAction,

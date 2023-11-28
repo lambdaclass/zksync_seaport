@@ -615,142 +615,599 @@ export type OrdersMatchedEvent = TypedEvent<
 export type OrdersMatchedEventFilter = TypedEventFilter<OrdersMatchedEvent>;
   
 
-export interface SeaportBaseContract extends BaseContract {
-    connect(signerOrProvider: Signer | Provider | string): this;
-    attach(addressOrName: string): this;
-    deployed(): Promise<this>;
-  
-    //interface: SeaportInterface;
-  
-    queryFilter<TEvent extends TypedEvent>(
-      event: TypedEventFilter<TEvent>,
-      fromBlockOrBlockhash?: string | number | undefined,
-      toBlock?: string | number | undefined
-    ): Promise<Array<TEvent>>;
-  
-    listeners<TEvent extends TypedEvent>(
-      eventFilter?: TypedEventFilter<TEvent>
-    ): Array<TypedListener<TEvent>>;
-    listeners(eventName?: string): Array<Listener>;
-    removeAllListeners<TEvent extends TypedEvent>(
-      eventFilter: TypedEventFilter<TEvent>
-    ): this;
-    removeAllListeners(eventName?: string): this;
-    off: OnEvent<this>;
-    on: OnEvent<this>;
-    once: OnEvent<this>;
-    removeListener: OnEvent<this>;
-  
-    functions: {
-      cancel(
-        orders: OrderComponentsStruct[],
-        overrides?: Overrides & { from?: string }
-      ): Promise<ContractTransaction>;
-  
-      fulfillAdvancedOrder(
-        arg0: AdvancedOrderStruct,
-        arg1: CriteriaResolverStruct[],
-        fulfillerConduitKey: BytesLike,
-        recipient: string,
-        overrides?: PayableOverrides & { from?: string }
-      ): Promise<ContractTransaction>;
-  
-      fulfillAvailableAdvancedOrders(
-        arg0: AdvancedOrderStruct[],
-        arg1: CriteriaResolverStruct[],
-        arg2: FulfillmentComponentStruct[][],
-        arg3: FulfillmentComponentStruct[][],
-        fulfillerConduitKey: BytesLike,
-        recipient: string,
-        maximumFulfilled: BigNumberish,
-        overrides?: PayableOverrides & { from?: string }
-      ): Promise<ContractTransaction>;
-  
-      fulfillAvailableOrders(
-        arg0: OrderStruct[],
-        arg1: FulfillmentComponentStruct[][],
-        arg2: FulfillmentComponentStruct[][],
-        fulfillerConduitKey: BytesLike,
-        maximumFulfilled: BigNumberish,
-        overrides?: PayableOverrides & { from?: string }
-      ): Promise<ContractTransaction>;
-  
-      fulfillBasicOrder(
-        parameters: BasicOrderParametersStruct,
-        overrides?: PayableOverrides & { from?: string }
-      ): Promise<ContractTransaction>;
-  
-      fulfillBasicOrder_efficient_6GL6yc(
-        parameters: BasicOrderParametersStruct,
-        overrides?: PayableOverrides & { from?: string }
-      ): Promise<ContractTransaction>;
-  
-      fulfillOrder(
-        arg0: OrderStruct,
-        fulfillerConduitKey: BytesLike,
-        overrides?: PayableOverrides & { from?: string }
-      ): Promise<ContractTransaction>;
-  
-      getContractOffererNonce(
-        contractOfferer: string,
-        overrides?: CallOverrides
-      ): Promise<[BigNumber] & { nonce: BigNumber }>;
-  
-      getCounter(
-        offerer: string,
-        overrides?: CallOverrides
-      ): Promise<[BigNumber] & { counter: BigNumber }>;
-  
-      getOrderHash(
-        arg0: OrderComponentsStruct,
-        overrides?: CallOverrides
-      ): Promise<[string] & { orderHash: string }>;
-  
-      getOrderStatus(
-        orderHash: BytesLike,
-        overrides?: CallOverrides
-      ): Promise<
-        [boolean, boolean, BigNumber, BigNumber] & {
-          isValidated: boolean;
-          isCancelled: boolean;
-          totalFilled: BigNumber;
-          totalSize: BigNumber;
-        }
-      >;
-  
-      incrementCounter(
-        overrides?: Overrides & { from?: string }
-      ): Promise<ContractTransaction>;
-  
-      information(
-        overrides?: CallOverrides
-      ): Promise<
-        [string, string, string] & {
-          version: string;
-          domainSeparator: string;
-          conduitController: string;
-        }
-      >;
-  
-      matchAdvancedOrders(
-        arg0: AdvancedOrderStruct[],
-        arg1: CriteriaResolverStruct[],
-        arg2: FulfillmentStruct[],
-        recipient: string,
-        overrides?: PayableOverrides & { from?: string }
-      ): Promise<ContractTransaction>;
-  
-      matchOrders(
-        arg0: OrderStruct[],
-        arg1: FulfillmentStruct[],
-        overrides?: PayableOverrides & { from?: string }
-      ): Promise<ContractTransaction>;
-  
-      name(overrides?: CallOverrides): Promise<[string]>;
-  
-      validate(
-        arg0: OrderStruct[],
-        overrides?: Overrides & { from?: string }
-      ): Promise<ContractTransaction>;
-};
-};
+export interface Seaport extends BaseContract {
+  connect(signerOrProvider: Signer | Provider | string): this;
+  attach(addressOrName: string): this;
+  deployed(): Promise<this>;
+
+  interface: SeaportInterface;
+
+  queryFilter<TEvent extends TypedEvent>(
+    event: TypedEventFilter<TEvent>,
+    fromBlockOrBlockhash?: string | number | undefined,
+    toBlock?: string | number | undefined
+  ): Promise<Array<TEvent>>;
+
+  listeners<TEvent extends TypedEvent>(
+    eventFilter?: TypedEventFilter<TEvent>
+  ): Array<TypedListener<TEvent>>;
+  listeners(eventName?: string): Array<Listener>;
+  removeAllListeners<TEvent extends TypedEvent>(
+    eventFilter: TypedEventFilter<TEvent>
+  ): this;
+  removeAllListeners(eventName?: string): this;
+  off: OnEvent<this>;
+  on: OnEvent<this>;
+  once: OnEvent<this>;
+  removeListener: OnEvent<this>;
+
+  functions: {
+    cancel(
+      orders: OrderComponentsStruct[],
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>;
+
+    fulfillAdvancedOrder(
+      arg0: AdvancedOrderStruct,
+      arg1: CriteriaResolverStruct[],
+      fulfillerConduitKey: BytesLike,
+      recipient: string,
+      overrides?: PayableOverrides & { from?: string }
+    ): Promise<ContractTransaction>;
+
+    fulfillAvailableAdvancedOrders(
+      arg0: AdvancedOrderStruct[],
+      arg1: CriteriaResolverStruct[],
+      arg2: FulfillmentComponentStruct[][],
+      arg3: FulfillmentComponentStruct[][],
+      fulfillerConduitKey: BytesLike,
+      recipient: string,
+      maximumFulfilled: BigNumberish,
+      overrides?: PayableOverrides & { from?: string }
+    ): Promise<ContractTransaction>;
+
+    fulfillAvailableOrders(
+      arg0: OrderStruct[],
+      arg1: FulfillmentComponentStruct[][],
+      arg2: FulfillmentComponentStruct[][],
+      fulfillerConduitKey: BytesLike,
+      maximumFulfilled: BigNumberish,
+      overrides?: PayableOverrides & { from?: string }
+    ): Promise<ContractTransaction>;
+
+    fulfillBasicOrder(
+      parameters: BasicOrderParametersStruct,
+      overrides?: PayableOverrides & { from?: string }
+    ): Promise<ContractTransaction>;
+
+    fulfillBasicOrder_efficient_6GL6yc(
+      parameters: BasicOrderParametersStruct,
+      overrides?: PayableOverrides & { from?: string }
+    ): Promise<ContractTransaction>;
+
+    fulfillOrder(
+      arg0: OrderStruct,
+      fulfillerConduitKey: BytesLike,
+      overrides?: PayableOverrides & { from?: string }
+    ): Promise<ContractTransaction>;
+
+    getContractOffererNonce(
+      contractOfferer: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber] & { nonce: BigNumber }>;
+
+    getCounter(
+      offerer: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber] & { counter: BigNumber }>;
+
+    getOrderHash(
+      arg0: OrderComponentsStruct,
+      overrides?: CallOverrides
+    ): Promise<[string] & { orderHash: string }>;
+
+    getOrderStatus(
+      orderHash: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<
+      [boolean, boolean, BigNumber, BigNumber] & {
+        isValidated: boolean;
+        isCancelled: boolean;
+        totalFilled: BigNumber;
+        totalSize: BigNumber;
+      }
+    >;
+
+    incrementCounter(
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>;
+
+    information(
+      overrides?: CallOverrides
+    ): Promise<
+      [string, string, string] & {
+        version: string;
+        domainSeparator: string;
+        conduitController: string;
+      }
+    >;
+
+    matchAdvancedOrders(
+      arg0: AdvancedOrderStruct[],
+      arg1: CriteriaResolverStruct[],
+      arg2: FulfillmentStruct[],
+      recipient: string,
+      overrides?: PayableOverrides & { from?: string }
+    ): Promise<ContractTransaction>;
+
+    matchOrders(
+      arg0: OrderStruct[],
+      arg1: FulfillmentStruct[],
+      overrides?: PayableOverrides & { from?: string }
+    ): Promise<ContractTransaction>;
+
+    name(overrides?: CallOverrides): Promise<[string]>;
+
+    validate(
+      arg0: OrderStruct[],
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>;
+  };
+
+  cancel(
+    orders: OrderComponentsStruct[],
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>;
+
+  fulfillAdvancedOrder(
+    arg0: AdvancedOrderStruct,
+    arg1: CriteriaResolverStruct[],
+    fulfillerConduitKey: BytesLike,
+    recipient: string,
+    overrides?: PayableOverrides & { from?: string }
+  ): Promise<ContractTransaction>;
+
+  fulfillAvailableAdvancedOrders(
+    arg0: AdvancedOrderStruct[],
+    arg1: CriteriaResolverStruct[],
+    arg2: FulfillmentComponentStruct[][],
+    arg3: FulfillmentComponentStruct[][],
+    fulfillerConduitKey: BytesLike,
+    recipient: string,
+    maximumFulfilled: BigNumberish,
+    overrides?: PayableOverrides & { from?: string }
+  ): Promise<ContractTransaction>;
+
+  fulfillAvailableOrders(
+    arg0: OrderStruct[],
+    arg1: FulfillmentComponentStruct[][],
+    arg2: FulfillmentComponentStruct[][],
+    fulfillerConduitKey: BytesLike,
+    maximumFulfilled: BigNumberish,
+    overrides?: PayableOverrides & { from?: string }
+  ): Promise<ContractTransaction>;
+
+  fulfillBasicOrder(
+    parameters: BasicOrderParametersStruct,
+    overrides?: PayableOverrides & { from?: string }
+  ): Promise<ContractTransaction>;
+
+  fulfillBasicOrder_efficient_6GL6yc(
+    parameters: BasicOrderParametersStruct,
+    overrides?: PayableOverrides & { from?: string }
+  ): Promise<ContractTransaction>;
+
+  fulfillOrder(
+    arg0: OrderStruct,
+    fulfillerConduitKey: BytesLike,
+    overrides?: PayableOverrides & { from?: string }
+  ): Promise<ContractTransaction>;
+
+  getContractOffererNonce(
+    contractOfferer: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  getCounter(offerer: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+  getOrderHash(
+    arg0: OrderComponentsStruct,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
+  getOrderStatus(
+    orderHash: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<
+    [boolean, boolean, BigNumber, BigNumber] & {
+      isValidated: boolean;
+      isCancelled: boolean;
+      totalFilled: BigNumber;
+      totalSize: BigNumber;
+    }
+  >;
+
+  incrementCounter(
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>;
+
+  information(
+    overrides?: CallOverrides
+  ): Promise<
+    [string, string, string] & {
+      version: string;
+      domainSeparator: string;
+      conduitController: string;
+    }
+  >;
+
+  matchAdvancedOrders(
+    arg0: AdvancedOrderStruct[],
+    arg1: CriteriaResolverStruct[],
+    arg2: FulfillmentStruct[],
+    recipient: string,
+    overrides?: PayableOverrides & { from?: string }
+  ): Promise<ContractTransaction>;
+
+  matchOrders(
+    arg0: OrderStruct[],
+    arg1: FulfillmentStruct[],
+    overrides?: PayableOverrides & { from?: string }
+  ): Promise<ContractTransaction>;
+
+  name(overrides?: CallOverrides): Promise<string>;
+
+  validate(
+    arg0: OrderStruct[],
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>;
+
+  callStatic: {
+    cancel(
+      orders: OrderComponentsStruct[],
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    fulfillAdvancedOrder(
+      arg0: AdvancedOrderStruct,
+      arg1: CriteriaResolverStruct[],
+      fulfillerConduitKey: BytesLike,
+      recipient: string,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    fulfillAvailableAdvancedOrders(
+      arg0: AdvancedOrderStruct[],
+      arg1: CriteriaResolverStruct[],
+      arg2: FulfillmentComponentStruct[][],
+      arg3: FulfillmentComponentStruct[][],
+      fulfillerConduitKey: BytesLike,
+      recipient: string,
+      maximumFulfilled: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[boolean[], ExecutionStructOutput[]]>;
+
+    fulfillAvailableOrders(
+      arg0: OrderStruct[],
+      arg1: FulfillmentComponentStruct[][],
+      arg2: FulfillmentComponentStruct[][],
+      fulfillerConduitKey: BytesLike,
+      maximumFulfilled: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[boolean[], ExecutionStructOutput[]]>;
+
+    fulfillBasicOrder(
+      parameters: BasicOrderParametersStruct,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    fulfillBasicOrder_efficient_6GL6yc(
+      parameters: BasicOrderParametersStruct,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    fulfillOrder(
+      arg0: OrderStruct,
+      fulfillerConduitKey: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    getContractOffererNonce(
+      contractOfferer: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getCounter(offerer: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    getOrderHash(
+      arg0: OrderComponentsStruct,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    getOrderStatus(
+      orderHash: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<
+      [boolean, boolean, BigNumber, BigNumber] & {
+        isValidated: boolean;
+        isCancelled: boolean;
+        totalFilled: BigNumber;
+        totalSize: BigNumber;
+      }
+    >;
+
+    incrementCounter(overrides?: CallOverrides): Promise<BigNumber>;
+
+    information(
+      overrides?: CallOverrides
+    ): Promise<
+      [string, string, string] & {
+        version: string;
+        domainSeparator: string;
+        conduitController: string;
+      }
+    >;
+
+    matchAdvancedOrders(
+      arg0: AdvancedOrderStruct[],
+      arg1: CriteriaResolverStruct[],
+      arg2: FulfillmentStruct[],
+      recipient: string,
+      overrides?: CallOverrides
+    ): Promise<ExecutionStructOutput[]>;
+
+    matchOrders(
+      arg0: OrderStruct[],
+      arg1: FulfillmentStruct[],
+      overrides?: CallOverrides
+    ): Promise<ExecutionStructOutput[]>;
+
+    name(overrides?: CallOverrides): Promise<string>;
+
+    validate(arg0: OrderStruct[], overrides?: CallOverrides): Promise<boolean>;
+  };
+
+  filters: {
+    "CounterIncremented(uint256,address)"(
+      newCounter?: null,
+      offerer?: string | null
+    ): CounterIncrementedEventFilter;
+    CounterIncremented(
+      newCounter?: null,
+      offerer?: string | null
+    ): CounterIncrementedEventFilter;
+
+    "OrderCancelled(bytes32,address,address)"(
+      orderHash?: null,
+      offerer?: string | null,
+      zone?: string | null
+    ): OrderCancelledEventFilter;
+    OrderCancelled(
+      orderHash?: null,
+      offerer?: string | null,
+      zone?: string | null
+    ): OrderCancelledEventFilter;
+
+    "OrderFulfilled(bytes32,address,address,address,(uint8,address,uint256,uint256)[],(uint8,address,uint256,uint256,address)[])"(
+      orderHash?: null,
+      offerer?: string | null,
+      zone?: string | null,
+      recipient?: null,
+      offer?: null,
+      consideration?: null
+    ): OrderFulfilledEventFilter;
+    OrderFulfilled(
+      orderHash?: null,
+      offerer?: string | null,
+      zone?: string | null,
+      recipient?: null,
+      offer?: null,
+      consideration?: null
+    ): OrderFulfilledEventFilter;
+
+    "OrderValidated(bytes32,(address,address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint8,uint256,uint256,bytes32,uint256,bytes32,uint256))"(
+      orderHash?: null,
+      orderParameters?: null
+    ): OrderValidatedEventFilter;
+    OrderValidated(
+      orderHash?: null,
+      orderParameters?: null
+    ): OrderValidatedEventFilter;
+
+    "OrdersMatched(bytes32[])"(orderHashes?: null): OrdersMatchedEventFilter;
+    OrdersMatched(orderHashes?: null): OrdersMatchedEventFilter;
+  };
+
+  estimateGas: {
+    cancel(
+      orders: OrderComponentsStruct[],
+      overrides?: Overrides & { from?: string }
+    ): Promise<BigNumber>;
+
+    fulfillAdvancedOrder(
+      arg0: AdvancedOrderStruct,
+      arg1: CriteriaResolverStruct[],
+      fulfillerConduitKey: BytesLike,
+      recipient: string,
+      overrides?: PayableOverrides & { from?: string }
+    ): Promise<BigNumber>;
+
+    fulfillAvailableAdvancedOrders(
+      arg0: AdvancedOrderStruct[],
+      arg1: CriteriaResolverStruct[],
+      arg2: FulfillmentComponentStruct[][],
+      arg3: FulfillmentComponentStruct[][],
+      fulfillerConduitKey: BytesLike,
+      recipient: string,
+      maximumFulfilled: BigNumberish,
+      overrides?: PayableOverrides & { from?: string }
+    ): Promise<BigNumber>;
+
+    fulfillAvailableOrders(
+      arg0: OrderStruct[],
+      arg1: FulfillmentComponentStruct[][],
+      arg2: FulfillmentComponentStruct[][],
+      fulfillerConduitKey: BytesLike,
+      maximumFulfilled: BigNumberish,
+      overrides?: PayableOverrides & { from?: string }
+    ): Promise<BigNumber>;
+
+    fulfillBasicOrder(
+      parameters: BasicOrderParametersStruct,
+      overrides?: PayableOverrides & { from?: string }
+    ): Promise<BigNumber>;
+
+    fulfillBasicOrder_efficient_6GL6yc(
+      parameters: BasicOrderParametersStruct,
+      overrides?: PayableOverrides & { from?: string }
+    ): Promise<BigNumber>;
+
+    fulfillOrder(
+      arg0: OrderStruct,
+      fulfillerConduitKey: BytesLike,
+      overrides?: PayableOverrides & { from?: string }
+    ): Promise<BigNumber>;
+
+    getContractOffererNonce(
+      contractOfferer: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getCounter(offerer: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    getOrderHash(
+      arg0: OrderComponentsStruct,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getOrderStatus(
+      orderHash: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    incrementCounter(
+      overrides?: Overrides & { from?: string }
+    ): Promise<BigNumber>;
+
+    information(overrides?: CallOverrides): Promise<BigNumber>;
+
+    matchAdvancedOrders(
+      arg0: AdvancedOrderStruct[],
+      arg1: CriteriaResolverStruct[],
+      arg2: FulfillmentStruct[],
+      recipient: string,
+      overrides?: PayableOverrides & { from?: string }
+    ): Promise<BigNumber>;
+
+    matchOrders(
+      arg0: OrderStruct[],
+      arg1: FulfillmentStruct[],
+      overrides?: PayableOverrides & { from?: string }
+    ): Promise<BigNumber>;
+
+    name(overrides?: CallOverrides): Promise<BigNumber>;
+
+    validate(
+      arg0: OrderStruct[],
+      overrides?: Overrides & { from?: string }
+    ): Promise<BigNumber>;
+  };
+
+  populateTransaction: {
+    cancel(
+      orders: OrderComponentsStruct[],
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    fulfillAdvancedOrder(
+      arg0: AdvancedOrderStruct,
+      arg1: CriteriaResolverStruct[],
+      fulfillerConduitKey: BytesLike,
+      recipient: string,
+      overrides?: PayableOverrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    fulfillAvailableAdvancedOrders(
+      arg0: AdvancedOrderStruct[],
+      arg1: CriteriaResolverStruct[],
+      arg2: FulfillmentComponentStruct[][],
+      arg3: FulfillmentComponentStruct[][],
+      fulfillerConduitKey: BytesLike,
+      recipient: string,
+      maximumFulfilled: BigNumberish,
+      overrides?: PayableOverrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    fulfillAvailableOrders(
+      arg0: OrderStruct[],
+      arg1: FulfillmentComponentStruct[][],
+      arg2: FulfillmentComponentStruct[][],
+      fulfillerConduitKey: BytesLike,
+      maximumFulfilled: BigNumberish,
+      overrides?: PayableOverrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    fulfillBasicOrder(
+      parameters: BasicOrderParametersStruct,
+      overrides?: PayableOverrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    fulfillBasicOrder_efficient_6GL6yc(
+      parameters: BasicOrderParametersStruct,
+      overrides?: PayableOverrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    fulfillOrder(
+      arg0: OrderStruct,
+      fulfillerConduitKey: BytesLike,
+      overrides?: PayableOverrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    getContractOffererNonce(
+      contractOfferer: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getCounter(
+      offerer: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getOrderHash(
+      arg0: OrderComponentsStruct,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getOrderStatus(
+      orderHash: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    incrementCounter(
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    information(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    matchAdvancedOrders(
+      arg0: AdvancedOrderStruct[],
+      arg1: CriteriaResolverStruct[],
+      arg2: FulfillmentStruct[],
+      recipient: string,
+      overrides?: PayableOverrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    matchOrders(
+      arg0: OrderStruct[],
+      arg1: FulfillmentStruct[],
+      overrides?: PayableOverrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    validate(
+      arg0: OrderStruct[],
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+  };
+}
