@@ -8,273 +8,293 @@ import type {
     Overrides,
     PayableOverrides,
     PopulatedTransaction,
+    Contract,
     utils,
 } from "ethers";
 
-import type {
-    TypedEventFilter,
-    TypedEvent,
-    TypedListener,
-    OnEvent,
-  } from "./common";
-import { Provider, Signer} from "zksync-web3";
-import type { Listener} from "@ethersproject/providers";
+import { ItemType, OrderType } from "./constants";
+import { Provider, Signer as zkSigner} from "zksync-web3";
+import type { DomainRegistry as TypeChainDomainRegistryContract } from "./domainRegistry";
+import { OrderStruct, SeaportBaseContract } from "./seaportBaseContract";
 
-export type AdditionalRecipientStruct = {
-    amount: BigNumberish;
-    recipient: string;
-  };
+import type { TestERC20 } from "./test/TestERC20";
+import type { TestERC721 } from "./test/TestERC721";
 
-export type BasicOrderParametersStruct = {
-    considerationToken: string;
-    considerationIdentifier: BigNumberish;
-    considerationAmount: BigNumberish;
-    offerer: string;
-    zone: string;
-    offerToken: string;
-    offerIdentifier: BigNumberish;
-    offerAmount: BigNumberish;
-    basicOrderType: BigNumberish;
-    startTime: BigNumberish;
-    endTime: BigNumberish;
-    zoneHash: BytesLike;
-    salt: BigNumberish;
-    offererConduitKey: BytesLike;
-    fulfillerConduitKey: BytesLike;
-    totalOriginalAdditionalRecipients: BigNumberish;
-    additionalRecipients: AdditionalRecipientStruct[];
-    signature: BytesLike;
-  };
 
-export type FulfillmentStruct = {
-    offerComponents: FulfillmentComponentStruct[];
-    considerationComponents: FulfillmentComponentStruct[];
-  };
-
-export type FulfillmentComponentStruct = {
-    orderIndex: BigNumberish;
-    itemIndex: BigNumberish;
-  };
-
-export type CriteriaResolverStruct = {
-    orderIndex: BigNumberish;
-    side: BigNumberish;
-    index: BigNumberish;
-    identifier: BigNumberish;
-    criteriaProof: BytesLike[];
-  };
-
-export type AdvancedOrderStruct = {
-    parameters: OrderParametersStruct;
-    numerator: BigNumberish;
-    denominator: BigNumberish;
-    signature: BytesLike;
-    extraData: BytesLike;
-  };
-
-export type ConsiderationItemStruct = {
-    itemType: BigNumberish;
+export type SeaportConfig = {
+    // Used because fulfillments may be invalid if confirmations take too long. Default buffer is 5 minutes
+    ascendingAmountFulfillmentBuffer?: number;
+  
+    // Allow users to optionally skip balance and approval checks on order creation
+    balanceAndApprovalChecksOnOrderCreation?: boolean;
+  
+    // A mapping of conduit key to conduit
+    conduitKeyToConduit?: Record<string, string>;
+  
+    // The Seaport version to use
+    seaportVersion?: "1.4" | "1.5";
+  
+    overrides?: {
+      contractAddress?: string;
+      domainRegistryAddress?: string;
+      // A default conduit key to use when creating and fulfilling orders
+      defaultConduitKey?: string;
+    };
+};
+  
+type TypedDataDomain = {
+    name?: string;
+    version?: string;
+    chainId?: BigNumberish;
+    verifyingContract?: string;
+    salt?: BytesLike;
+};
+  
+type TypedDataField = {
+    name: string;
+    type: string;
+};
+  
+  // Temporary until TypedDataSigner is added in ethers (in v6)
+export type Signer = zkSigner & {
+    _signTypedData(
+      domain: TypedDataDomain,
+      types: Record<string, Array<TypedDataField>>,
+      value: Record<string, any>,
+    ): Promise<string>;
+};
+  
+export type OfferItem = {
+    itemType: ItemType;
     token: string;
-    identifierOrCriteria: BigNumberish;
-    startAmount: BigNumberish;
-    endAmount: BigNumberish;
+    identifierOrCriteria: string;
+    startAmount: string;
+    endAmount: string;
+};
+  
+export type ConsiderationItem = {
+    itemType: ItemType;
+    token: string;
+    identifierOrCriteria: string;
+    startAmount: string;
+    endAmount: string;
     recipient: string;
-  };
-
-export type OrderComponentsStruct = {
+};
+  
+export type Item = OfferItem | ConsiderationItem;
+  
+export type OrderParameters = {
     offerer: string;
     zone: string;
-    offer: OfferItemStruct[];
-    consideration: ConsiderationItemStruct[];
-    orderType: BigNumberish;
+    orderType: OrderType;
     startTime: BigNumberish;
     endTime: BigNumberish;
-    zoneHash: BytesLike;
-    salt: BigNumberish;
-    conduitKey: BytesLike;
-    counter: BigNumberish;
+    zoneHash: string;
+    salt: string;
+    offer: OfferItem[];
+    consideration: ConsiderationItem[];
+    totalOriginalConsiderationItems: BigNumberish;
+    conduitKey: string;
 };
-
-export type OfferItemStruct = {
-itemType: BigNumberish;
-token: string;
-identifierOrCriteria: BigNumberish;
-startAmount: BigNumberish;
-endAmount: BigNumberish;
+  
+export type OrderComponents = OrderParameters & { counter: BigNumberish };
+  
+export type Order = {
+    parameters: OrderParameters;
+    signature: string;
 };
-
-export type OrderParametersStruct = {
-offerer: string;
-zone: string;
-offer: OfferItemStruct[];
-consideration: ConsiderationItemStruct[];
-orderType: BigNumberish;
-startTime: BigNumberish;
-endTime: BigNumberish;
-zoneHash: BytesLike;
-salt: BigNumberish;
-conduitKey: BytesLike;
-totalOriginalConsiderationItems: BigNumberish;
+  
+export type AdvancedOrder = Order & {
+    numerator: BigNumber;
+    denominator: BigNumber;
+    extraData: string;
 };
-
-export type OrderStruct = {
-parameters: OrderParametersStruct;
-signature: BytesLike;
+  
+export type BasicErc721Item = {
+    itemType: ItemType.ERC721;
+    token: string;
+    identifier: string;
 };
-
+  
+export type Erc721ItemWithCriteria = {
+    itemType: ItemType.ERC721;
+    token: string;
+    amount?: string;
+    endAmount?: string;
+    // Used for criteria based items i.e. offering to buy 5 NFTs for a collection
+} & ({ identifiers: string[] } | { criteria: string });
+  
+type Erc721Item = BasicErc721Item | Erc721ItemWithCriteria;
+  
+export type BasicErc1155Item = {
+    itemType: ItemType.ERC1155;
+    token: string;
+    identifier: string;
+    amount: string;
+    endAmount?: string;
+};
+  
+export type Erc1155ItemWithCriteria = {
+    itemType: ItemType.ERC1155;
+    token: string;
+    amount: string;
+    endAmount?: string;
+} & ({ identifiers: string[] } | { criteria: string });
+  
+type Erc1155Item = BasicErc1155Item | Erc1155ItemWithCriteria;
+  
+export type CurrencyItem = {
+    token?: string;
+    amount: string;
+    endAmount?: string;
+};
+  
+export type CreateInputItem = Erc721Item | Erc1155Item | CurrencyItem;
+  
+export type ConsiderationInputItem = CreateInputItem & { recipient?: string };
+  
+export type TipInputItem = CreateInputItem & { recipient: string };
+  
+export type Fee = {
+    recipient: string;
+    basisPoints: number;
+};
+  
+export type CreateOrderInput = {
+    conduitKey?: string;
+    zone?: string;
+    zoneHash?: string;
+    startTime?: BigNumberish;
+    endTime?: BigNumberish;
+    offer: readonly CreateInputItem[];
+    consideration: readonly ConsiderationInputItem[];
+    counter?: BigNumberish;
+    fees?: readonly Fee[];
+    allowPartialFills?: boolean;
+    restrictedByZone?: boolean;
+    domain?: string;
+    salt?: BigNumberish;
+};
+  
+export type InputCriteria = {
+    identifier: string;
+    proof: string[];
+};
+  
+export type OrderStatus = {
+    isValidated: boolean;
+    isCancelled: boolean;
+    totalFilled: BigNumber;
+    totalSize: BigNumber;
+};
+  
+export type OrderWithCounter = {
+    parameters: OrderComponents;
+    signature: string;
+};
+  
+export type ContractMethodReturnType<
+    T extends Contract,
+    U extends keyof T["callStatic"],
+    // eslint-disable-next-line no-undef
+> = Awaited<ReturnType<T["callStatic"][U]>>;
+  
+export type TransactionMethods<T = unknown> = {
+    buildTransaction: (overrides?: Overrides) => Promise<PopulatedTransaction>;
+    callStatic: (overrides?: Overrides) => Promise<T>;
+    estimateGas: (overrides?: Overrides) => Promise<BigNumber>;
+    transact: (overrides?: Overrides) => Promise<ContractTransaction>;
+};
+  
+export type ApprovalAction = {
+    type: "approval";
+    token: string;
+    identifierOrCriteria: string;
+    itemType: ItemType;
+    operator: string;
+    transactionMethods:
+      | TransactionMethods<
+          ContractMethodReturnType<TestERC721, "setApprovalForAll">
+        >
+      | TransactionMethods<ContractMethodReturnType<TestERC20, "approve">>;
+};
+  
+export type ExchangeAction<T = unknown> = {
+    type: "exchange";
+    transactionMethods: TransactionMethods<T>;
+};
+  
+export type CreateOrderAction = {
+    type: "create";
+    getMessageToSign: () => Promise<string>;
+    createOrder: () => Promise<OrderWithCounter>;
+};
+  
+export type CreateBulkOrdersAction = {
+    type: "createBulk";
+    getMessageToSign: () => Promise<string>;
+    createBulkOrders: () => Promise<OrderWithCounter[]>;
+};
+  
+export type TransactionAction = ApprovalAction | ExchangeAction;
+  
+export type CreateOrderActions = readonly [
+    ...ApprovalAction[],
+    CreateOrderAction,
+];
+  
+export type CreateBulkOrdersActions = readonly [
+    ...ApprovalAction[],
+    CreateBulkOrdersAction,
+];
+  
+export type OrderExchangeActions<T> = readonly [
+    ...ApprovalAction[],
+    ExchangeAction<T>,
+];
+  
+export type OrderUseCase<
+    T extends CreateOrderAction | CreateBulkOrdersAction | ExchangeAction,
+  > = {
+    actions: T extends CreateOrderAction
+      ? CreateOrderActions
+      : T extends CreateBulkOrdersAction
+      ? CreateBulkOrdersActions
+      : OrderExchangeActions<T extends ExchangeAction<infer U> ? U : never>;
+    executeAllActions: () => Promise<
+      T extends CreateOrderAction
+        ? OrderWithCounter
+        : T extends CreateBulkOrdersAction
+        ? OrderWithCounter[]
+        : ContractTransaction
+    >;
+};
+  
+export type FulfillmentComponent = {
+    orderIndex: number;
+    itemIndex: number;
+}[];
+  
+export type Fulfillment = {
+    offerComponents: FulfillmentComponent[];
+    considerationComponents: FulfillmentComponent[];
+};
+  
 type MatchOrdersFulfillmentComponent = {
     orderIndex: number;
     itemIndex: number;
 };
-
+  
 export type MatchOrdersFulfillment = {
-offerComponents: MatchOrdersFulfillmentComponent[];
-considerationComponents: MatchOrdersFulfillmentComponent[];
+    offerComponents: MatchOrdersFulfillmentComponent[];
+    considerationComponents: MatchOrdersFulfillmentComponent[];
 };
 
-export interface Seaport extends BaseContract {
-    connect(signerOrProvider: Signer | Provider | string): this;
-    attach(addressOrName: string): this;
-    deployed(): Promise<this>;
-  
-    //interface: SeaportInterface;
-  
-    queryFilter<TEvent extends TypedEvent>(
-      event: TypedEventFilter<TEvent>,
-      fromBlockOrBlockhash?: string | number | undefined,
-      toBlock?: string | number | undefined
-    ): Promise<Array<TEvent>>;
-  
-    listeners<TEvent extends TypedEvent>(
-      eventFilter?: TypedEventFilter<TEvent>
-    ): Array<TypedListener<TEvent>>;
-    listeners(eventName?: string): Array<Listener>;
-    removeAllListeners<TEvent extends TypedEvent>(
-      eventFilter: TypedEventFilter<TEvent>
-    ): this;
-    removeAllListeners(eventName?: string): this;
-    off: OnEvent<this>;
-    on: OnEvent<this>;
-    once: OnEvent<this>;
-    removeListener: OnEvent<this>;
-  
-    functions: {
-      cancel(
-        orders: OrderComponentsStruct[],
-        overrides?: Overrides & { from?: string }
-      ): Promise<ContractTransaction>;
-  
-      fulfillAdvancedOrder(
-        arg0: AdvancedOrderStruct,
-        arg1: CriteriaResolverStruct[],
-        fulfillerConduitKey: BytesLike,
-        recipient: string,
-        overrides?: PayableOverrides & { from?: string }
-      ): Promise<ContractTransaction>;
-  
-      fulfillAvailableAdvancedOrders(
-        arg0: AdvancedOrderStruct[],
-        arg1: CriteriaResolverStruct[],
-        arg2: FulfillmentComponentStruct[][],
-        arg3: FulfillmentComponentStruct[][],
-        fulfillerConduitKey: BytesLike,
-        recipient: string,
-        maximumFulfilled: BigNumberish,
-        overrides?: PayableOverrides & { from?: string }
-      ): Promise<ContractTransaction>;
-  
-      fulfillAvailableOrders(
-        arg0: OrderStruct[],
-        arg1: FulfillmentComponentStruct[][],
-        arg2: FulfillmentComponentStruct[][],
-        fulfillerConduitKey: BytesLike,
-        maximumFulfilled: BigNumberish,
-        overrides?: PayableOverrides & { from?: string }
-      ): Promise<ContractTransaction>;
-  
-      fulfillBasicOrder(
-        parameters: BasicOrderParametersStruct,
-        overrides?: PayableOverrides & { from?: string }
-      ): Promise<ContractTransaction>;
-  
-      fulfillBasicOrder_efficient_6GL6yc(
-        parameters: BasicOrderParametersStruct,
-        overrides?: PayableOverrides & { from?: string }
-      ): Promise<ContractTransaction>;
-  
-      fulfillOrder(
-        arg0: OrderStruct,
-        fulfillerConduitKey: BytesLike,
-        overrides?: PayableOverrides & { from?: string }
-      ): Promise<ContractTransaction>;
-  
-      getContractOffererNonce(
-        contractOfferer: string,
-        overrides?: CallOverrides
-      ): Promise<[BigNumber] & { nonce: BigNumber }>;
-  
-      getCounter(
-        offerer: string,
-        overrides?: CallOverrides
-      ): Promise<[BigNumber] & { counter: BigNumber }>;
-  
-      getOrderHash(
-        arg0: OrderComponentsStruct,
-        overrides?: CallOverrides
-      ): Promise<[string] & { orderHash: string }>;
-  
-      getOrderStatus(
-        orderHash: BytesLike,
-        overrides?: CallOverrides
-      ): Promise<
-        [boolean, boolean, BigNumber, BigNumber] & {
-          isValidated: boolean;
-          isCancelled: boolean;
-          totalFilled: BigNumber;
-          totalSize: BigNumber;
-        }
-      >;
-  
-      incrementCounter(
-        overrides?: Overrides & { from?: string }
-      ): Promise<ContractTransaction>;
-  
-      information(
-        overrides?: CallOverrides
-      ): Promise<
-        [string, string, string] & {
-          version: string;
-          domainSeparator: string;
-          conduitController: string;
-        }
-      >;
-  
-      matchAdvancedOrders(
-        arg0: AdvancedOrderStruct[],
-        arg1: CriteriaResolverStruct[],
-        arg2: FulfillmentStruct[],
-        recipient: string,
-        overrides?: PayableOverrides & { from?: string }
-      ): Promise<ContractTransaction>;
-  
-      matchOrders(
-        arg0: OrderStruct[],
-        arg1: FulfillmentStruct[],
-        overrides?: PayableOverrides & { from?: string }
-      ): Promise<ContractTransaction>;
-  
-      name(overrides?: CallOverrides): Promise<[string]>;
-  
-      validate(
-        arg0: OrderStruct[],
-        overrides?: Overrides & { from?: string }
-      ): Promise<ContractTransaction>;
-    };
-  
-}
+
+
 // Overrides matchOrders types to fix fulfillments type which is generated
 // by TypeChain incorrectly
-export type SeaportContract = Seaport & {
+export type SeaportContract = SeaportBaseContract & {
     encodeFunctionData(
       functionFragment: "matchOrders",
       values: [OrderStruct[], MatchOrdersFulfillment[]],
@@ -286,35 +306,37 @@ export type SeaportContract = Seaport & {
       overrides?: PayableOverrides & { from?: string | Promise<string> },
     ): Promise<ContractTransaction>;
   
-    functions: Seaport["functions"] & {
+    functions: SeaportBaseContract["functions"] & {
       matchOrders(
         orders: OrderStruct[],
         fulfillments: MatchOrdersFulfillment[],
         overrides?: PayableOverrides & { from?: string | Promise<string> },
       ): Promise<ContractTransaction>;
-    };
+  };
   
-    callStatic: Seaport["callStatic"] & {
+    callStatic: SeaportBaseContract["callStatic"] & {
       matchOrders(
         orders: OrderStruct[],
         fulfillments: MatchOrdersFulfillment[],
         overrides?: PayableOverrides & { from?: string | Promise<string> },
       ): Promise<ContractTransaction>;
-    };
+  };
   
-    estimateGas: Seaport["estimateGas"] & {
+    estimateGas: SeaportBaseContract["estimateGas"] & {
       matchOrders(
         orders: OrderStruct[],
         fulfillments: MatchOrdersFulfillment[],
         overrides?: PayableOverrides & { from?: string | Promise<string> },
       ): Promise<BigNumber>;
-    };
+  };
   
-    populateTransaction: Seaport["populateTransaction"] & {
+    populateTransaction: SeaportBaseContract["populateTransaction"] & {
       matchOrders(
         orders: OrderStruct[],
         fulfillments: MatchOrdersFulfillment[],
         overrides?: PayableOverrides & { from?: string | Promise<string> },
       ): Promise<PopulatedTransaction>;
-    };
   };
+};
+
+export type DomainRegistryContract = TypeChainDomainRegistryContract;

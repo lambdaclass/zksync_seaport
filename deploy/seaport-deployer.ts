@@ -4,6 +4,12 @@ import { ethers } from 'ethers';
 import * as hre from "hardhat";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 
+import * as fs from 'fs';
+
+function storeContractAddress(address: string, file: string) {
+  fs.writeFileSync(".constants." + file, address);
+}
+
 const PRIVATE_KEY = process.env.WALLET_PRIVATE_KEY || "";
 
 if (!PRIVATE_KEY) throw "⛔️ Private key not detected! Add it to the .env file!";
@@ -26,7 +32,8 @@ export default async function () {
   const coduitControllerArtifact = "ConduitController";
   const coduitController = await deployContract(deployer, wallet, coduitControllerArtifact);
   const conduitArtifact = "Conduit";
-  await deployContract(deployer, wallet, conduitArtifact);
+  const conduit = await deployContract(deployer, wallet, conduitArtifact);
+  storeContractAddress(conduit.address, "conduit");
 
   // Deploy Helpers contract
   const transferHelperArtifact = "TransferHelper";
@@ -38,6 +45,12 @@ export default async function () {
   // Deploy Seaport contract
   const seaportArtifact = "Seaport";
   const seaport = await deployContract(deployer, wallet, seaportArtifact, [coduitController.address]);
+  storeContractAddress(seaport.address, "seaport");
+
+  // Deploy DomainRegistry contract
+  const domainRegistryArtifact = "DomainRegistry";
+  const domainRegistry = await deployContract(deployer, wallet, domainRegistryArtifact);
+  storeContractAddress(seaport.address, "domainRegistry");
 
   // Deploy with safeCreate2
   const seaport_address = await deploySafeCreate2Contract(provider, seaport, salt, immutableCreate2);
