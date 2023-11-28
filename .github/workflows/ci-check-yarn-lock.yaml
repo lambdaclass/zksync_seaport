@@ -24,14 +24,5 @@ jobs:
         run: yarn install --frozen-lockfile
 
       - name: Check that ./ExecutionHelper/yarn.lock is up to date.
-        id: checkYarnLock
         run: yarn install --frozen-lockfile
         working-directory: ./ExecutionHelper
-
-      - name: Run yarn install to list outdated packages
-        if: failure() && steps.checkYarnLock.outcome == 'failure'
-        run: yarn install
-
-      - name: Diff yarn.lock
-        if: failure() && steps.checkYarnLock.outcome == 'failure'
-        run: git diff --cached yarn.lock
