@@ -1,21 +1,22 @@
 # ------------------------------------------------------------------------------
-# Development environment setup:
+# Development environment 
 # ------------------------------------------------------------------------------
 
-.PHONY: setup
-setup: era-test-node setup-execution-helper setup-seaport
-
-# Clones the `era-test-node` into `./era-test-node/`.
-era-test-node: 
-	git clone --depth 1 git@github.com:matter-labs/era-test-node.git
+.PHONY: install-era-test-node
+install-era-test-node:
+	[ -d "./era-test-node" ] || git clone --depth 1 git@github.com:matter-labs/era-test-node.git && \
+	cd era-test-node && cargo install --path .
 
 .PHONY: setup-execution-helper
 setup-execution-helper: 
 	cd ExecutionHelper && yarn install 
 
 .PHONY: setup-seaport
-setup-seaport: 
+setup-seaport: setup-execution-helper
 	yarn install
+
+.PHONY: setup
+setup: era-test-node setup-execution-helper setup-seaport
 
 # ------------------------------------------------------------------------------
 # Development environment update:
@@ -23,7 +24,9 @@ setup-seaport:
 
 .PHONY: update.era-test-node
 update.era-test-node: ./era-test-node
-	cd era-test-node && git pull
+	cd era-test-node && \
+	git pull && \
+	cargo install --path .
 
 # ------------------------------------------------------------------------------
 # Compile:
@@ -43,8 +46,8 @@ compile-seaport: compile-execution-helper deploy-execution-helper
 # ------------------------------------------------------------------------------
 
 .PHONY: run-era-test-node
-run-era-test-node: era-test-node
-	cd era-test-node && cargo +nightly run -- --show-calls=all --resolve-hashes run
+run-era-test-node:
+	era_test_node --show-calls=all --resolve-hashes --show-gas-details=all run
 
 # ------------------------------------------------------------------------------
 # Clean:
