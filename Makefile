@@ -1,17 +1,8 @@
-.PHONY: compile setup install-era-test-node
-
 # ------------------------------------------------------------------------------
-# Main:
+# Development environment 
 # ------------------------------------------------------------------------------
 
-setup: install-era-test-node setup-seaport
-
-compile: compile-seaport
-
-# ------------------------------------------------------------------------------
-# Development environment setup:
-# ------------------------------------------------------------------------------
-
+.PHONY: install-era-test-node
 install-era-test-node:
 	[ -d "./era-test-node" ] || git clone --depth 1 git@github.com:matter-labs/era-test-node.git && \
 	cd era-test-node && cargo install --path .
@@ -23,6 +14,9 @@ setup-execution-helper:
 .PHONY: setup-seaport
 setup-seaport: setup-execution-helper
 	yarn install
+
+.PHONY: setup
+setup: era-test-node setup-execution-helper setup-seaport
 
 # ------------------------------------------------------------------------------
 # Development environment update:
@@ -63,16 +57,15 @@ run-era-test-node:
 clean-execution-helper: 
 	cd ExecutionHelper && \
 	yarn hardhat clean && \
-	yarn cache clean
+	rm -rf node_modules
 
 .PHONY: clean-seaport
 clean-seaport:
 	yarn hardhat clean && \
-	yarn cache clean
+	rm -rf node_modules
 
 .PHONY: clean
 clean: clean-execution-helper clean-seaport
-	yarn hardhat clean
 
 # ------------------------------------------------------------------------------
 # Deploy:
