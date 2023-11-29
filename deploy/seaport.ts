@@ -29,6 +29,7 @@ import {
   OrderType,
   SEAPORT_CONTRACT_VERSION_V1_5,
   SEAPORT_CONTRACT_VERSION_V1_4,
+  OPENSEA_CONDUIT_KEY
 } from "./constants";
 
 import { getMaximumSizeForOrder, isCurrencyItem } from "./utils/item";
