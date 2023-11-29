@@ -1,4 +1,4 @@
-import { Provider, Wallet } from "zksync-web3";
+import { Provider, Wallet, Contract } from "zksync-web3";
 import * as hre from "hardhat";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 import dotenv from "dotenv";
@@ -71,15 +71,13 @@ type DeployContractOptions = {
    */ 
   wallet?: Wallet
 }
-export const deployContract = async (contractArtifactName: string, constructorArguments?: any[], options?: DeployContractOptions) => {
+export const deployContract = async (deployer: Deployer, wallet: Wallet, contractArtifactName: string, constructorArguments?: any[], options?: DeployContractOptions) => {
   const log = (message: string) => {
     if (!options?.silent) console.log(message);
   }
 
   log(`\nStarting deployment process of "${contractArtifactName}"...`);
   
-  const wallet = options?.wallet ?? getWallet();
-  const deployer = new Deployer(hre, wallet);
   const artifact = await deployer.loadArtifact(contractArtifactName).catch((error) => {
     if (error?.message?.includes(`Artifact for contract "${contractArtifactName}" not found.`)) {
       console.error(error.message);
@@ -119,4 +117,15 @@ export const deployContract = async (contractArtifactName: string, constructorAr
   }
 
   return contract;
+}
+
+export const deploySafeCreate2Contract = async (provider: Provider, contract: Contract, salt: string, immutableCreate2: Contract) => {
+  
+  if (!immutableCreate2.hasBeenDeployed(contract.address)) {
+    const transaction = await provider.getTransaction(contract.deployTransaction.hash);
+    const creationCode = transaction.data;
+    const contract_address = await immutableCreate2.safeCreate2(salt , creationCode, {gasLimit: 100000000}); 
+    return contract_address;
+  }
+  
 }

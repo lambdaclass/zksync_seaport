@@ -1,4 +1,14 @@
 # ------------------------------------------------------------------------------
+# Main:
+# ------------------------------------------------------------------------------
+
+setup: install-era-test-node setup-seaport
+
+compile: compile-seaport
+
+deploy: deploy-execution-helper deploy-seaport
+
+# ------------------------------------------------------------------------------
 # Development environment 
 # ------------------------------------------------------------------------------
 
@@ -82,6 +92,3 @@ deploy-execution-helper:
 .PHONY: deploy-seaport
 deploy-seaport:
 	yarn hardhat deploy-zksync --script seaport-deployer.ts
-
-.PHONY: deploy
-deploy: deploy-execution-helper deploy-seaport
