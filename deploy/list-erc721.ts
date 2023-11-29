@@ -1,5 +1,5 @@
-import { Seaport } from "@opensea/seaport-js";
-import { ItemType } from "@opensea/seaport-js/lib/constants";
+import { Seaport } from "./seaport";
+import { ItemType } from "./constants";
 import { ethers } from "ethers";
 import { getProvider, getWallet } from "./utils";
 
@@ -9,7 +9,7 @@ const NFT_ADDRESS = "0x76F668B5faED818d6F1b848aDf910d58f71539A4";
 export default async function () {
     const provider = getProvider();
     const wallet = getWallet(); 
-    const seaportContractAddress = "0x4AabcFA6A4085dEeb5DfB72E458E3E97f53906CF";
+    const seaportContractAddress = "0xEC1f5bAC8c4976c82274a390A68d85872B35e835";
     const seaport = new Seaport(provider, { overrides: { contractAddress: seaportContractAddress } });
 
     const offerer = wallet.address;
