@@ -25,9 +25,6 @@ setup-execution-helper:
 setup-seaport: setup-execution-helper
 	yarn install
 
-.PHONY: setup
-setup: era-test-node setup-execution-helper setup-seaport
-
 # ------------------------------------------------------------------------------
 # Development environment update:
 # ------------------------------------------------------------------------------
