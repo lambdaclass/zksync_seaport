@@ -1,8 +1,3 @@
-era-test-node/
-.yarn/
-.gas_reports/
-.DS_Store
-
 # Logs
 logs
 *.log
@@ -118,4 +113,4 @@ dist
 .tern-port
 
 # address files
-.constants.*
+.executionHelper.address

@@ -9,6 +9,12 @@ import { ethers } from "ethers";
 import * as hre from "hardhat";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 
+import * as fs from "fs";
+
+function storeContractAddress(address: string, file: string) {
+  fs.writeFileSync(".constants." + file, address);
+}
+
 const PRIVATE_KEY = process.env.WALLET_PRIVATE_KEY || "";
 
 if (!PRIVATE_KEY)
@@ -18,10 +24,7 @@ export function getSalt(sender: Address): string {
   const lastBytes = ethers.utils
     .keccak256(ethers.utils.toUtf8Bytes("lambda"))
     .slice(0, 26);
-  console.log(`lastbytes: ${lastBytes}`);
   const salt = ethers.utils.concat([sender, lastBytes]);
-  console.log(`sender: ${sender}`);
-  console.log(`salt: ${salt}`);
   return ethers.utils.hexlify(salt);
 }
 
@@ -45,7 +48,8 @@ export default async function () {
     coduitControllerArtifact
   );
   const conduitArtifact = "Conduit";
-  await deployContract(deployer, wallet, conduitArtifact);
+  const conduit = await deployContract(deployer, wallet, conduitArtifact);
+  storeContractAddress(conduit.address, "conduit");
 
   // Deploy Helpers contract
   const transferHelperArtifact = "TransferHelper";
@@ -69,6 +73,16 @@ export default async function () {
   const seaport = await deployContract(deployer, wallet, seaportArtifact, [
     coduitController.address,
   ]);
+  storeContractAddress(seaport.address, "seaport");
+
+  // Deploy DomainRegistry contract
+  const domainRegistryArtifact = "DomainRegistry";
+  const domainRegistry = await deployContract(
+    deployer,
+    wallet,
+    domainRegistryArtifact
+  );
+  storeContractAddress(seaport.address, "domainRegistry");
 
   // Deploy with safeCreate2
   const seaport_address = await deploySafeCreate2Contract(
