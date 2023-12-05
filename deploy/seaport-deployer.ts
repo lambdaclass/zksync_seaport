@@ -28,35 +28,12 @@ export default async function () {
   // const salt = getSalt(wallet.address);
 
   const immutableCreate2 = await deployCreate2Contract(wallet, "ImmutableCreate2Factory");
-  const conduitController = await deployCreate2Contract(wallet, "ConduitController");
   const conduit = await deployCreate2Contract(wallet, "Conduit");
-  // TODO: This should be conduit controller address instead of conduit address.
-  // const transferHelper = await deployCreate2Contract(wallet, "TransferHelper", [conduit.address]);
-
-
-  // TODO: This should be uncommented when deploySafeCreate2Contract its working 
-  // // Deploy with safeCreate2
-  // const transferHelper_address = await deploySafeCreate2Contract(
-  //   provider,
-  //   transferHelper,
-  //   salt,
-  //   immutableCreate2
-  // );
-
-  // // Deploy Seaport contract
-  // const seaportArtifact = "Seaport";
-  // const seaport = await deployContract(deployer, wallet, seaportArtifact, [
-  //   coduitController.address,
-  // ]);
-
-  // TODO: This should be uncommented when deploySafeCreate2Contract its working
-  // // Deploy with safeCreate2
-  // const seaport_address = await deploySafeCreate2Contract(
-  //   provider,
-  //   seaport,
-  //   salt,
-  //   immutableCreate2
-  // );
+  const conduitController = await deployCreate2Contract(wallet, "ConduitController");
+  const transferHelper = await deployCreate2Contract(wallet, "TransferHelper", [conduitController.address]);
+  // const seaportValidatorHelper = await deployCreate2Contract(wallet, "SeaportValidatorHelper");
+  
+  // const seaport = await deployCreate2Contract(wallet, "Seaport", [conduitController.address]);
 
   // // Deploy navigator contracts
 

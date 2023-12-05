@@ -128,7 +128,7 @@ export const deployContract = async (deployer: Deployer, wallet: Wallet, contrac
 
 export async function deployCreate2Contract(wallet: Wallet, contractName: string, args: any[] = [], overrides: Object = {}): Promise<Contract> {
   const artifact = await hre.artifacts.readArtifact(contractName);
-  const factory = new ContractFactory(artifact.abi, artifact.bytecode, wallet, "create");
+  const factory = new ContractFactory(artifact.abi, artifact.bytecode, wallet, "create2");
   const contract = (await factory.deploy(...args, {
       customData: { salt: ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LambdaClass"))},
       gasLimit: 80000000,
