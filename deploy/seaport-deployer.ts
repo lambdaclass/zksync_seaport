@@ -39,32 +39,61 @@ export default async function () {
   const transferHelper = await deployCreate2Contract(wallet, "TransferHelper", [
     conduitController.address,
   ]);
-  // const seaportValidatorHelper = await deployCreate2Contract(wallet, "SeaportValidatorHelper");
+  const seaportValidatorHelper = await deployCreate2Contract(
+    wallet,
+    "SeaportValidatorHelper"
+  );
   const readOnlyOrderValidator = await deployCreate2Contract(
     wallet,
     "ReadOnlyOrderValidator"
   );
-  // const seaportValidator = await deployCreate2Contract(wallet, "SeaportValidator", [
-  //   readOnlyOrderValidator.address,
-  //   seaportValidatorHelper.address,
-  //   conduitController.address,
-  // ]);
-  // const requestValidator = await deployCreate2Contract(wallet, "RequestValidator");
-  // const criteriaHelper = await deployCreate2Contract(wallet, "CriteriaHelper");
-  // const validatorHelper = await deployCreate2Contract(wallet, "ValidatorHelper");
-  // const orderDetailsHelper = await deployCreate2Contract(wallet, "OrderDetailsHelper");
-  // const fulfillmentsHelper = await deployCreate2Contract(wallet, "FulfillmentsHelper");
-  // const suggestedActionHelper = await deployCreate2Contract(wallet, "SuggestedActionHelper");
-  // const executionsHelper = await deployCreate2Contract(wallet, "ExecutionsHelper");
-  // const seaportNavigator = await deployCreate2Contract(wallet, "SeaportNavigator", [
-  //   requestValidator.address,
-  //   criteriaHelper.address,
-  //   validatorHelper.address,
-  //   orderDetailsHelper.address,
-  //   fulfillmentsHelper.address,
-  //   suggestedActionHelper.address,
-  //   executionsHelper.address,
-  // ]);
+  const seaportValidator = await deployCreate2Contract(
+    wallet,
+    "SeaportValidator",
+    [
+      readOnlyOrderValidator.address,
+      seaportValidatorHelper.address,
+      conduitController.address,
+    ]
+  );//111_630_398
+  const requestValidator = await deployCreate2Contract(
+    wallet,
+    "RequestValidator"
+  );//154_251_024
+  const criteriaHelper = await deployCreate2Contract(wallet, "CriteriaHelper");
+  const validatorHelper = await deployCreate2Contract(
+    wallet,
+    "ValidatorHelper"
+  );//125_586_779
+  const orderDetailsHelper = await deployCreate2Contract(
+    wallet,
+    "OrderDetailsHelper"
+  );//153_292_042
+  const fulfillmentsHelper = await deployCreate2Contract(
+    wallet,
+    "FulfillmentsHelper"
+  );//211_235_184
+  const suggestedActionHelper = await deployCreate2Contract(
+    wallet,
+    "SuggestedActionHelper"
+  );//227_973_998
+  const executionsHelper = await deployCreate2Contract(
+    wallet,
+    "ExecutionsHelper"
+  );//155_999_555
+  const seaportNavigator = await deployCreate2Contract(
+    wallet,
+    "SeaportNavigator",
+    [
+      requestValidator.address,
+      criteriaHelper.address,
+      validatorHelper.address,
+      orderDetailsHelper.address,
+      fulfillmentsHelper.address,
+      suggestedActionHelper.address,
+      executionsHelper.address,
+    ]
+  );//161_456_366
 
   // TODO: This should be uncommented when deploySafeCreate2Contract its working
   // const seaportValidatorHelper_address = await deploySafeCreate2Contract(
