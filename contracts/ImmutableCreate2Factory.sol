@@ -2,6 +2,8 @@
 pragma solidity 0.8.17;
 
 import { ImmutableCreate2FactoryInterface } from "./interfaces/ImmutableCreate2FactoryInterface.sol";
+import { DEPLOYER_SYSTEM_CONTRACT, IContractDeployer } from "@matterlabs/zksync-contracts/l2/system-contracts/Constants.sol";
+import "@matterlabs/zksync-contracts/l2/system-contracts/libraries/SystemContractsCaller.sol";
 
 /**
  * @title Immutable Create2 Contract Factory
@@ -22,43 +24,46 @@ contract ImmutableCreate2Factory is ImmutableCreate2FactoryInterface {
   // mapping to track which addresses have already been deployed.
   mapping(address => bool) private _deployed;
 
-  /**
-   * @dev Create a contract using CREATE2 by submitting a given salt or nonce
-   * along with the initialization code for the contract. Note that the first 20
-   * bytes of the salt must match those of the calling address, which prevents
-   * contract creation events from being submitted by unintended parties.
-   * @param salt bytes32 The nonce that will be passed into the CREATE2 call.
-   * @param initializationCode bytes The initialization code that will be passed
-   * into the CREATE2 call.
-   * @return deploymentAddress Address of the contract that will be created, or the null address
-   * if a contract already exists at that address.
-   */
+  // /**
+  //  * @dev Create a contract using CREATE2 by submitting a given salt or nonce
+  //  * along with the initialization code for the contract. Note that the first 20
+  //  * bytes of the salt must match those of the calling address, which prevents
+  //  * contract creation events from being submitted by unintended parties.
+  //  * @param salt bytes32 The nonce that will be passed into the CREATE2 call.
+  //  * @param initializationCode bytes The initialization code that will be passed
+  //  * into the CREATE2 call.
+  //  * @return deploymentAddress Address of the contract that will be created, or the null address
+  //  * if a contract already exists at that address.
+  //  */
   function safeCreate2(
-    bytes32 salt,
-    bytes calldata initializationCode
-  ) external payable containsCaller(salt) returns (address deploymentAddress) {
-    // move the initialization code from calldata to memory.
-    bytes memory initCode = initializationCode;
+    bytes32 _salt,
+    bytes32 _bytecodeHash,
+    bytes calldata _input
+  ) external payable containsCaller(_salt) returns (address deploymentAddress) {
+    address targetDeploymentAddress = DEPLOYER_SYSTEM_CONTRACT.getNewAddressCreate2(address(this), _salt, _bytecodeHash, _input);
+    
+    // // move the initialization code from calldata to memory.
+    // bytes memory initCode = initializationCode;
 
-    // determine the target address for contract deployment.
-    address targetDeploymentAddress = address(
-      uint160(                    // downcast to match the address type.
-        uint256(                  // convert to uint to truncate upper digits.
-          keccak256(              // compute the CREATE2 hash using 4 inputs.
-            abi.encodePacked(     // pack all inputs to the hash together.
-              hex"ff",            // start with 0xff to distinguish from RLP.
-              address(this),      // this contract will be the caller.
-              salt,               // pass in the supplied salt value.
-              keccak256(          // pass in the hash of initialization code.
-                abi.encodePacked(
-                  initCode
-                )
-              )
-            )
-          )
-        )
-      )
-    );
+    // // determine the target address for contract deployment.
+    // address targetDeploymentAddress = address(
+    //   uint160(                    // downcast to match the address type.
+    //     uint256(                  // convert to uint to truncate upper digits.
+    //       keccak256(              // compute the CREATE2 hash using 4 inputs.
+    //         abi.encodePacked(     // pack all inputs to the hash together.
+    //           hex"ff",            // start with 0xff to distinguish from RLP.
+    //           address(this),      // this contract will be the caller.
+    //           salt,               // pass in the supplied salt value.
+    //           keccak256(          // pass in the hash of initialization code.
+    //             abi.encodePacked(
+    //               initCode
+    //             )
+    //           )
+    //         )
+    //       )
+    //     )
+    //   )
+    // );
 
     // ensure that a contract hasn't been previously deployed to target address.
     require(
@@ -66,17 +71,31 @@ contract ImmutableCreate2Factory is ImmutableCreate2FactoryInterface {
       "Invalid contract creation - contract has already been deployed."
     );
 
-    // using inline assembly: load data and length of data, then call CREATE2.
-    assembly {                                // solhint-disable-line
-      let encoded_data := add(0x20, initCode) // load initialization code.
-      let encoded_size := mload(initCode)     // load the init code's length.
-      deploymentAddress := create2(           // call CREATE2 with 4 arguments.
-        0xFF,                                 // start with 0xff to distinguish from RLP.
-        encoded_data,                         // pass in initialization code.
-        encoded_size,                         // pass in init code's length.
-        salt                                  // pass in the salt value.
-      )
-    }
+    (bool success, bytes memory returnData) = SystemContractsCaller
+        .systemCallWithReturndata(
+            uint32(gasleft()),
+            address(DEPLOYER_SYSTEM_CONTRACT),
+            uint128(0),
+            abi.encodeCall(
+                DEPLOYER_SYSTEM_CONTRACT.create2Account,
+                (_salt, _bytecodeHash, _input, IContractDeployer.AccountAbstractionVersion.None)
+            )
+        );
+    require(success, "Deployment failed");
+
+    (deploymentAddress) = abi.decode(returnData, (address));
+
+    // // using inline assembly: load data and length of data, then call CREATE2.
+    // assembly {                                // solhint-disable-line
+    //   let encoded_data := add(0x20, initCode) // load initialization code.
+    //   let encoded_size := mload(initCode)     // load the init code's length.
+    //   deploymentAddress := create2(           // call CREATE2 with 4 arguments.
+    //     0xFF,                                 // start with 0xff to distinguish from RLP.
+    //     encoded_data,                         // pass in initialization code.
+    //     encoded_size,                         // pass in init code's length.
+    //     salt                                  // pass in the salt value.
+    //   )
+    // }
 
     // check address against target to ensure that deployment was successful.
     require(

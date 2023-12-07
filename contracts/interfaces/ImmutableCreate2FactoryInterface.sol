@@ -16,23 +16,24 @@ pragma solidity ^0.8.13;
  *         a given block of initialization code.
  */
 interface ImmutableCreate2FactoryInterface {
-    /**
-     * @dev Create a contract using CREATE2 by submitting a given salt or nonce
-     *      along with the initialization code for the contract. Note that the
-     *      first 20 bytes of the salt must match those of the calling address,
-     *      which prevents contract creation events from being submitted by
-     *      unintended parties.
-     *
-     * @param salt               The nonce that will be passed into the CREATE2
-     *                           call.
-     * @param initializationCode The initialization code that will be passed
-     *                           into the CREATE2 call.
-     *
-     * @return deploymentAddress Address of the contract that will be created.
-     */
+    // /**
+    //  * @dev Create a contract using CREATE2 by submitting a given salt or nonce
+    //  *      along with the initialization code for the contract. Note that the
+    //  *      first 20 bytes of the salt must match those of the calling address,
+    //  *      which prevents contract creation events from being submitted by
+    //  *      unintended parties.
+    //  *
+    //  * @param salt               The nonce that will be passed into the CREATE2
+    //  *                           call.
+    //  * @param initializationCode The initialization code that will be passed
+    //  *                           into the CREATE2 call.
+    //  *
+    //  * @return deploymentAddress Address of the contract that will be created.
+    //  */
     function safeCreate2(
-        bytes32 salt,
-        bytes calldata initializationCode
+        bytes32 _salt,
+        bytes32 _bytecodeHash,
+        bytes calldata _input
     ) external payable returns (address deploymentAddress);
 
     /**
