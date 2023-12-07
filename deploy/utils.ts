@@ -119,13 +119,25 @@ export const deployContract = async (deployer: Deployer, wallet: Wallet, contrac
   return contract;
 }
 
-export const deploySafeCreate2Contract = async (provider: Provider, contract: Contract, salt: string, immutableCreate2: Contract) => {
+// export const deploySafeCreate2Contract = async (provider: Provider, contract: Contract, salt: string, immutableCreate2: Contract) => {
+
+//   if (!immutableCreate2.hasBeenDeployed(contract.address)) {
+//     const transaction = await provider.getTransaction(contract.deployTransaction.hash);
+//     const creationCode = transaction.data;
+//     const contract_address = await immutableCreate2.safeCreate2(salt , creationCode, {gasLimit: 100000000});
+//     return contract_address;
+//   }
   
-  if (!immutableCreate2.hasBeenDeployed(contract.address)) {
+// }
+
+export const deploySafeCreate2Contract = async (provider: Provider, contract: Contract, salt: string, immutableCreate2: Contract) => {
+  const contractHasBeenDeployed = await immutableCreate2.hasBeenDeployed(contract.address)
+  console.log(`contractHasBeenDeployed: ${contractHasBeenDeployed}`);
+  if (!contractHasBeenDeployed) {
     const transaction = await provider.getTransaction(contract.deployTransaction.hash);
     const creationCode = transaction.data;
     const contract_address = await immutableCreate2.safeCreate2(salt , creationCode, {gasLimit: 100000000}); 
+    await contract_address.wait();
     return contract_address;
   }
-  
 }
