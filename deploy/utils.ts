@@ -1,12 +1,17 @@
-import { Provider, Wallet, Contract } from "zksync-web3";
+import { Provider, Wallet, Contract, ContractFactory } from "zksync-web3";
 import * as hre from "hardhat";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 import dotenv from "dotenv";
 import { formatEther } from "ethers/lib/utils";
-import { BigNumberish } from "ethers";
+import { BigNumberish, ethers } from "ethers";
 
 import "@matterlabs/hardhat-zksync-node/dist/type-extensions";
 import "@matterlabs/hardhat-zksync-verify/dist/src/type-extensions";
+import { Address, DeploymentType } from "zksync-web3/build/src/types";
+
+import chalk from "chalk";
+import { getSalt } from "./seaport-deployer";
+import { hashBytecode } from "zksync-web3/build/src/utils";
 
 // Load env file
 dotenv.config();
@@ -71,53 +76,53 @@ type DeployContractOptions = {
    */ 
   wallet?: Wallet
 }
-export const deployContract = async (deployer: Deployer, wallet: Wallet, contractArtifactName: string, constructorArguments?: any[], options?: DeployContractOptions) => {
-  const log = (message: string) => {
-    if (!options?.silent) console.log(message);
-  }
+// export const deployContract = async (deployer: Deployer, wallet: Wallet, contractArtifactName: string, constructorArguments?: any[], options?: DeployContractOptions) => {
+//   const log = (message: string) => {
+//     if (!options?.silent) console.log(message);
+//   }
 
-  log(`\nStarting deployment process of "${contractArtifactName}"...`);
+//   log(`\nStarting deployment process of "${contractArtifactName}"...`);
   
-  const artifact = await deployer.loadArtifact(contractArtifactName).catch((error) => {
-    if (error?.message?.includes(`Artifact for contract "${contractArtifactName}" not found.`)) {
-      console.error(error.message);
-      throw `⛔️ Please make sure you have compiled your contracts or specified the correct contract name!`;
-    } else {
-      throw error;
-    }
-  });
+//   const artifact = await deployer.loadArtifact(contractArtifactName).catch((error) => {
+//     if (error?.message?.includes(`Artifact for contract "${contractArtifactName}" not found.`)) {
+//       console.error(error.message);
+//       throw `⛔️ Please make sure you have compiled your contracts or specified the correct contract name!`;
+//     } else {
+//       throw error;
+//     }
+//   });
 
-  // Estimate contract deployment fee
-  const deploymentFee = await deployer.estimateDeployFee(artifact, constructorArguments || []);
-  log(`Estimated deployment cost: ${formatEther(deploymentFee)} ETH`);
+//   // Estimate contract deployment fee
+//   const deploymentFee = await deployer.estimateDeployFee(artifact, constructorArguments || []);
+//   log(`Estimated deployment cost: ${formatEther(deploymentFee)} ETH`);
 
-  // Check if the wallet has enough balance
-  await verifyEnoughBalance(wallet, deploymentFee);
+//   // Check if the wallet has enough balance
+//   await verifyEnoughBalance(wallet, deploymentFee);
 
-  // Deploy the contract to zkSync
-  const contract = await deployer.deploy(artifact, constructorArguments);
+//   // Deploy the contract to zkSync
+//   const contract = await deployer.deploy(artifact, constructorArguments);
 
-  const constructorArgs = contract.interface.encodeDeploy(constructorArguments);
-  const fullContractSource = `${artifact.sourceName}:${artifact.contractName}`;
+//   const constructorArgs = contract.interface.encodeDeploy(constructorArguments);
+//   const fullContractSource = `${artifact.sourceName}:${artifact.contractName}`;
 
-  // Display contract deployment info
-  log(`\n"${artifact.contractName}" was successfully deployed:`);
-  log(` - Contract address: ${contract.address}`);
-  log(` - Contract source: ${fullContractSource}`);
-  log(` - Encoded constructor arguments: ${constructorArgs}\n`);
+//   // Display contract deployment info
+//   log(`\n"${artifact.contractName}" was successfully deployed:`);
+//   log(` - Contract address: ${contract.address}`);
+//   log(` - Contract source: ${fullContractSource}`);
+//   log(` - Encoded constructor arguments: ${constructorArgs}\n`);
 
-  if (!options?.noVerify && hre.network.config.verifyURL) {
-    log(`Requesting contract verification...`);
-    await verifyContract({
-      address: contract.address,
-      contract: fullContractSource,
-      constructorArguments: constructorArgs,
-      bytecode: artifact.bytecode,
-    });
-  }
+//   if (!options?.noVerify && hre.network.config.verifyURL) {
+//     log(`Requesting contract verification...`);
+//     await verifyContract({
+//       address: contract.address,
+//       contract: fullContractSource,
+//       constructorArguments: constructorArgs,
+//       bytecode: artifact.bytecode,
+//     });
+//   }
 
-  return contract;
-}
+//   return contract;
+// }
 
 // export const deploySafeCreate2Contract = async (provider: Provider, contract: Contract, salt: string, immutableCreate2: Contract) => {
 
@@ -130,14 +135,44 @@ export const deployContract = async (deployer: Deployer, wallet: Wallet, contrac
   
 // }
 
-export const deploySafeCreate2Contract = async (provider: Provider, contract: Contract, salt: string, immutableCreate2: Contract) => {
-  const contractHasBeenDeployed = await immutableCreate2.hasBeenDeployed(contract.address)
-  console.log(`contractHasBeenDeployed: ${contractHasBeenDeployed}`);
-  if (!contractHasBeenDeployed) {
-    const transaction = await provider.getTransaction(contract.deployTransaction.hash);
-    const creationCode = transaction.data;
-    const contract_address = await immutableCreate2.safeCreate2(salt , creationCode, {gasLimit: 100000000}); 
-    await contract_address.wait();
-    return contract_address;
-  }
+// export const deploySafeCreate2Contract = async (provider: Provider, contract: Contract, salt: string, immutableCreate2: Contract) => {
+//   const contractHasBeenDeployed = await immutableCreate2.hasBeenDeployed(contract.address)
+//   console.log(`contractHasBeenDeployed: ${contractHasBeenDeployed}`);
+//   if (!contractHasBeenDeployed) {
+//     const transaction = await provider.getTransaction(contract.deployTransaction.hash);
+//     const creationCode = transaction.data;
+//     const contract_address = await immutableCreate2.safeCreate2(salt , creationCode, {gasLimit: 100000000}); 
+//     await contract_address.wait();
+//     return contract_address;
+//   }
+// }
+
+export async function deploySafeCreate2Contract(immutableCreate2: Contract, contractName: string, wallet: Wallet, args: any[] = [], overrides: Object = {}) {
+  const salt = getSalt(wallet.address);
+  const bytecode = (await hre.artifacts.readArtifact(contractName)).bytecode;
+
+  const tx = await immutableCreate2.safeCreate2(salt, hashBytecode(bytecode), "0x", { gasLimit: 80_000_000 }); 
+  const txReceipt = await tx.wait();
+  console.log(`${success('✔')} Deployed ${contractName} at address: ${txReceipt.contractAddress}`);
+
+  return txReceipt.contractAddress!;
+}
+
+const success = chalk.green;
+export async function deployContract(deploymentType: DeploymentType, wallet: Wallet, contractName: string, args: any[] = [], overrides: Object = {}): Promise<Contract> {
+  const artifact = await hre.artifacts.readArtifact(contractName);
+  const factory = new ContractFactory(artifact.abi, artifact.bytecode, wallet, deploymentType);
+  const contract = (await factory.deploy(...args, {
+      customData: { salt: ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LambdaClass"))},
+      gasLimit: 300000000,
+  })) as Contract;
+  console.log(`${success('✔')} Deployed ${contractName} at address: ${contract.address}`);
+
+  // await verifyContract({
+  //     address: contract.address,
+  //     contract: fullContractSource,
+  //     constructorArguments: constructorArgs,
+  //     bytecode: artifact.bytecode,
+  // });
+  return contract;
 }
