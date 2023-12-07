@@ -4,6 +4,7 @@ import {
   getProvider,
   getWallet,
   deploySafeCreate2Contract,
+  deployCreate2Contract,
 } from "./utils";
 import { ethers } from "ethers";
 import * as hre from "hardhat";
@@ -18,208 +19,71 @@ export function getSalt(sender: Address): string {
   const lastBytes = ethers.utils
     .keccak256(ethers.utils.toUtf8Bytes("lambda"))
     .slice(0, 26);
-  console.log(`lastbytes: ${lastBytes}`);
   const salt = ethers.utils.concat([sender, lastBytes]);
-  console.log(`sender: ${sender}`);
-  console.log(`salt: ${salt}`);
   return ethers.utils.hexlify(salt);
 }
 
 export default async function () {
-  const provider = getProvider();
   const wallet = getWallet();
-  const deployer = new Deployer(hre, wallet);
-  const salt = getSalt(wallet.address);
+  // const salt = getSalt(wallet.address);
 
-  const immutableCreate2 = await deployContract(
-    deployer,
+  const immutableCreate2 = await deployCreate2Contract(
     wallet,
     "ImmutableCreate2Factory"
   );
-
-  // Deploy conduit-related contracts
-  const coduitControllerArtifact = "ConduitController";
-  const coduitController = await deployContract(
-    deployer,
+  const conduit = await deployCreate2Contract(wallet, "Conduit");
+  const conduitController = await deployCreate2Contract(
     wallet,
-    coduitControllerArtifact
+    "ConduitController"
   );
-  const conduitArtifact = "Conduit";
-  await deployContract(deployer, wallet, conduitArtifact);
-
-  // Deploy Helpers contract
-  const transferHelperArtifact = "TransferHelper";
-  const transferHelper = await deployContract(
-    deployer,
-    wallet,
-    transferHelperArtifact,
-    [coduitController.address]
-  );
-
-  // Deploy with safeCreate2
-  const transferHelper_address = await deploySafeCreate2Contract(
-    provider,
-    transferHelper,
-    salt,
-    immutableCreate2
-  );
-
-  // Deploy Seaport contract
-  const seaportArtifact = "Seaport";
-  const seaport = await deployContract(deployer, wallet, seaportArtifact, [
-    coduitController.address,
+  const transferHelper = await deployCreate2Contract(wallet, "TransferHelper", [
+    conduitController.address,
   ]);
-
-  // Deploy with safeCreate2
-  const seaport_address = await deploySafeCreate2Contract(
-    provider,
-    seaport,
-    salt,
-    immutableCreate2
-  );
-
-  // Deploy navigator contracts
-
-  const seaportValidatorHelperArtifact = "SeaportValidatorHelper";
-  const seaportValidatorHelper = await deployContract(
-    deployer,
+  const seaportValidatorHelper = await deployCreate2Contract(
     wallet,
-    seaportValidatorHelperArtifact
+    "SeaportValidatorHelper"
   );
-  const seaportValidatorHelper_address = await deploySafeCreate2Contract(
-    provider,
-    seaportValidatorHelper,
-    salt,
-    immutableCreate2
-  );
-
-  const readOnlyOrderValidatorArtifact = "ReadOnlyOrderValidator";
-  const readOnlyOrderValidatorHelper = await deployContract(
-    deployer,
+  const readOnlyOrderValidator = await deployCreate2Contract(
     wallet,
-    readOnlyOrderValidatorArtifact
+    "ReadOnlyOrderValidator"
   );
-  const readOnlyOrderValidatorHelper_address = await deploySafeCreate2Contract(
-    provider,
-    readOnlyOrderValidatorHelper,
-    salt,
-    immutableCreate2
-  );
-
-  const seaportValidatorArtifact = "SeaportValidator";
-  const seaportValidator = await deployContract(
-    deployer,
+  const seaportValidator = await deployCreate2Contract(
     wallet,
-    seaportValidatorArtifact,
+    "SeaportValidator",
     [
-      readOnlyOrderValidatorHelper.address,
+      readOnlyOrderValidator.address,
       seaportValidatorHelper.address,
-      coduitController.address,
+      conduitController.address,
     ]
-  );
-  const seaportValidator_address = await deploySafeCreate2Contract(
-    provider,
-    seaportValidator,
-    salt,
-    immutableCreate2
-  );
-
-  const requestValidatorArtifact = "RequestValidator";
-  const requestValidator = await deployContract(
-    deployer,
+  );//111_630_398
+  const requestValidator = await deployCreate2Contract(
     wallet,
-    requestValidatorArtifact
-  );
-  const requestValidator_address = await deploySafeCreate2Contract(
-    provider,
-    requestValidator,
-    salt,
-    immutableCreate2
-  );
-
-  const criteriaHelperArtifact = "CriteriaHelper";
-  const criteriaHelper = await deployContract(
-    deployer,
+    "RequestValidator"
+  );//154_251_024
+  const criteriaHelper = await deployCreate2Contract(wallet, "CriteriaHelper");
+  const validatorHelper = await deployCreate2Contract(
     wallet,
-    criteriaHelperArtifact
-  );
-  const criteriaHelper_address = await deploySafeCreate2Contract(
-    provider,
-    criteriaHelper,
-    salt,
-    immutableCreate2
-  );
-
-  const validatorHelperArtifact = "ValidatorHelper";
-  const validatorHelper = await deployContract(
-    deployer,
+    "ValidatorHelper"
+  );//125_586_779
+  const orderDetailsHelper = await deployCreate2Contract(
     wallet,
-    validatorHelperArtifact
-  );
-  const validatorHelper_address = await deploySafeCreate2Contract(
-    provider,
-    validatorHelper,
-    salt,
-    immutableCreate2
-  );
-
-  const orderDetailsHelperArtifact = "OrderDetailsHelper";
-  const orderDetailsHelper = await deployContract(
-    deployer,
+    "OrderDetailsHelper"
+  );//153_292_042
+  const fulfillmentsHelper = await deployCreate2Contract(
     wallet,
-    orderDetailsHelperArtifact
-  );
-  const orderDetailsHelper_address = await deploySafeCreate2Contract(
-    provider,
-    orderDetailsHelper,
-    salt,
-    immutableCreate2
-  );
-
-  const fulfillmentsHelperArtifact = "FulfillmentsHelper";
-  const fulfillmentsHelper = await deployContract(
-    deployer,
+    "FulfillmentsHelper"
+  );//211_235_184
+  const suggestedActionHelper = await deployCreate2Contract(
     wallet,
-    fulfillmentsHelperArtifact
-  );
-  const fulfillmentsHelperr_address = await deploySafeCreate2Contract(
-    provider,
-    fulfillmentsHelper,
-    salt,
-    immutableCreate2
-  );
-
-  const suggestedActionHelperArtifact = "SuggestedActionHelper";
-  const suggestedActionHelper = await deployContract(
-    deployer,
+    "SuggestedActionHelper"
+  );//227_973_998
+  const executionsHelper = await deployCreate2Contract(
     wallet,
-    suggestedActionHelperArtifact
-  );
-  const suggestedActionHelper_address = await deploySafeCreate2Contract(
-    provider,
-    suggestedActionHelper,
-    salt,
-    immutableCreate2
-  );
-
-  const executionsHelperArtifact = "ExecutionsHelper";
-  const executionsHelper = await deployContract(
-    deployer,
+    "ExecutionsHelper"
+  );//155_999_555
+  const seaportNavigator = await deployCreate2Contract(
     wallet,
-    executionsHelperArtifact
-  );
-  const executionsHelper_address = await deploySafeCreate2Contract(
-    provider,
-    executionsHelper,
-    salt,
-    immutableCreate2
-  );
-
-  const seaportNavigatorArtifact = "SeaportNavigator";
-  const seaportNavigator = await deployContract(
-    deployer,
-    wallet,
-    seaportNavigatorArtifact,
+    "SeaportNavigator",
     [
       requestValidator.address,
       criteriaHelper.address,
@@ -229,11 +93,84 @@ export default async function () {
       suggestedActionHelper.address,
       executionsHelper.address,
     ]
-  );
-  const seaportNavigator_address = await deploySafeCreate2Contract(
-    provider,
-    seaportNavigator,
-    salt,
-    immutableCreate2
-  );
+  );//161_456_366
+
+  // TODO: This should be uncommented when deploySafeCreate2Contract its working
+  // const seaportValidatorHelper_address = await deploySafeCreate2Contract(
+  //   provider,
+  //   seaportValidatorHelper,
+  //   salt,
+  //   immutableCreate2
+  // );
+
+  // const readOnlyOrderValidatorHelper_address = await deploySafeCreate2Contract(
+  //   provider,
+  //   readOnlyOrderValidator,
+  //   salt,
+  //   immutableCreate2
+  // );
+
+  // const seaportValidator_address = await deploySafeCreate2Contract(
+  //   provider,
+  //   seaportValidator,
+  //   salt,
+  //   immutableCreate2
+  // );
+
+  // const requestValidator_address = await deploySafeCreate2Contract(
+  //   provider,
+  //   requestValidator,
+  //   salt,
+  //   immutableCreate2
+  // );
+
+  // const criteriaHelper_address = await deploySafeCreate2Contract(
+  //   provider,
+  //   criteriaHelper,
+  //   salt,
+  //   immutableCreate2
+  // );
+
+  // const validatorHelper_address = await deploySafeCreate2Contract(
+  //   provider,
+  //   validatorHelper,
+  //   salt,
+  //   immutableCreate2
+  // );
+
+  // const orderDetailsHelper_address = await deploySafeCreate2Contract(
+  //   provider,
+  //   orderDetailsHelper,
+  //   salt,
+  //   immutableCreate2
+  // );
+
+  // const fulfillmentsHelperr_address = await deploySafeCreate2Contract(
+  //   provider,
+  //   fulfillmentsHelper,
+  //   salt,
+  //   immutableCreate2
+  // );
+
+  // const suggestedActionHelper_address = await deploySafeCreate2Contract(
+  //   provider,
+  //   suggestedActionHelper,
+  //   salt,
+  //   immutableCreate2
+  // );
+
+  // const executionsHelper_address = await deploySafeCreate2Contract(
+  //   provider,
+  //   executionsHelper,
+  //   salt,
+  //   immutableCreate2
+  // );
+
+  // TODO: This should be uncommented when deploySafeCreate2Contract its working
+  // const seaportNavigator_address = await deploySafeCreate2Contract(
+  //   provider,
+  //   seaportNavigator,
+  //   salt,
+  //   immutableCreate2
+  // );
 }

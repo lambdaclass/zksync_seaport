@@ -1,15 +1,22 @@
-import { Provider, Wallet, Contract } from "zksync-web3";
 import * as hre from "hardhat";
+import chalk from 'chalk';
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 import dotenv from "dotenv";
 import { formatEther } from "ethers/lib/utils";
-import { BigNumberish } from "ethers";
+import { BigNumberish, ethers } from "ethers";
+import { DeploymentType } from 'zksync-web3/build/src/types';
+import { Contract, ContractFactory, Provider, Wallet, utils } from 'zksync-web3';
 
 import "@matterlabs/hardhat-zksync-node/dist/type-extensions";
 import "@matterlabs/hardhat-zksync-verify/dist/src/type-extensions";
 
 // Load env file
 dotenv.config();
+
+const entry = chalk.bold.yellow;
+const announce = chalk.yellow;
+const success = chalk.green;
+const timestamp = chalk.grey;
 
 export const getProvider = () => {
   const rpcUrl = hre.network.config.url;
@@ -115,6 +122,20 @@ export const deployContract = async (deployer: Deployer, wallet: Wallet, contrac
       bytecode: artifact.bytecode,
     });
   }
+
+  return contract;
+}
+
+export async function deployCreate2Contract(wallet: Wallet, contractName: string, args: any[] = [], overrides: Object = {}): Promise<Contract> {
+  const artifact = await hre.artifacts.readArtifact(contractName);
+  console.log("before contract factory");
+  const factory = new ContractFactory(artifact.abi, artifact.bytecode, wallet, "create2");
+  console.log("before deploy");
+  const contract = (await factory.deploy(...args, {
+      customData: { salt: ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LambdaClass"))},
+      gasLimit: 300000000,
+  })) as Contract;
+  console.log(`${success('✔')} Deployed ${contractName} at address: ${contract.address}`);
 
   return contract;
 }
