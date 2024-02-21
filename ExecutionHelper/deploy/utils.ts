@@ -21,6 +21,8 @@ export const getProvider = () => {
   return provider;
 }
 
+//removed all the greeter references
+
 export const getWallet = (privateKey?: string) => {
   if (!privateKey) {
     // Get wallet private key from .env file
